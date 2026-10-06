@@ -100,7 +100,7 @@ export function planExecution(
   if (intent.symbol !== snap.symbol)
     throw new Error(`intent is for ${intent.symbol}, market data for ${snap.symbol}`);
   const o = { ...PLANNER_DEFAULTS, ...options };
-  const lambda = LAMBDA[profile.urgency];
+  const lambda = LAMBDA[intent.urgency ?? profile.urgency];
   const fees: Record<Venue, Fees> = { ...snap.fees, ...profile.feeOverride };
   const now = snap.now;
   const nowSession = sessionAt(now, snap.holidays).session;
@@ -334,6 +334,7 @@ export function buildPlan(result: PlanResult, strategyId: string, modelVersion =
     intent: result.intent,
     profileName: result.profileName,
     arrivalMid,
+    arrivalMids: result.arrivalMids,
     strategy,
     createdAt: result.now,
     modelVersion,

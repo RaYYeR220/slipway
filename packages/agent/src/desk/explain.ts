@@ -130,6 +130,10 @@ export const GLOSSARY: Record<string, Entry> = {
     title: "Profile",
     text: "Refuses plans that use perps when the profile does not allow them, exceed its leverage, or trade in sessions it avoids.",
   },
+  DEADLINE: {
+    title: "Deadline",
+    text: "Refuses plans whose last child order lands after the deadline the trader gave, and names the cheapest strategy that finishes in time.",
+  },
   SOURCE_MISSING: {
     title: "Source missing",
     text: "Refuses when a critical input (a live book, session state, or the ability to price the plan) is unavailable. Optional sources degrade visibly instead.",

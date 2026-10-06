@@ -51,6 +51,7 @@ const ORDER: GateCode[] = [
   "EVENT_WINDOW",
   "PRICE_INTEGRITY",
   "PROFILE",
+  "DEADLINE",
   "SOURCE_MISSING",
 ];
 const CRITICAL_SOURCE = /orderbook|session/;
@@ -346,6 +347,26 @@ export function runGate(input: GateInput): GateResult {
       );
     if (problems.length) put("PROFILE", "refuse", problems.join("; "), "re-plan under the current profile");
     else put("PROFILE", "pass", `consistent with profile "${profile.name}"`);
+  }
+
+  // DEADLINE
+  {
+    const deadline = plan.intent.deadline;
+    const last = slices.reduce((m, s) => Math.max(m, s.t), Number.NEGATIVE_INFINITY);
+    if (deadline !== undefined && last > deadline) {
+      const minutes = Math.ceil((last - deadline) / 60_000);
+      const inTime = (input.candidates ?? [])
+        .filter((c) => c.feasible !== false && c.slices.every((s) => s.t <= deadline))
+        .sort((a, b) => a.score - b.score)[0];
+      put(
+        "DEADLINE",
+        "refuse",
+        `last slice lands ${minutes} min after the deadline`,
+        inTime ? `use ${inTime.id} (${bps(inTime.expectedBps)}), which finishes in time` : "move the deadline or trade faster",
+      );
+    } else {
+      put("DEADLINE", "pass", deadline === undefined ? "no deadline set" : "every slice lands before the deadline");
+    }
   }
 
   const ordered = ORDER.map((code) => checks.get(code) as GateCheck);

@@ -149,6 +149,7 @@ export interface OrderIntent {
   deadline?: number; // must be fully executed by
   holdHorizonHours?: number; // for perp-hold strategies
   venues?: Venue[]; // restrict venues
+  urgency?: Urgency; // per-order override of the profile's urgency
 }
 
 export type StrategyKind = "immediate" | "sliced" | "passive" | "wait" | "perp_then_rotate" | "perp_hold";
@@ -219,6 +220,7 @@ export type GateCode =
   | "EVENT_WINDOW"
   | "PRICE_INTEGRITY"
   | "PROFILE"
+  | "DEADLINE"
   | "SOURCE_MISSING";
 
 export interface GateCheck {
@@ -238,7 +240,8 @@ export interface GateResult {
 export interface Plan {
   intent: OrderIntent;
   profileName: string;
-  arrivalMid: number;
+  arrivalMid: number; // mid of the first slice's venue
+  arrivalMids?: Partial<Record<Venue, number>>; // every venue's mid at planning time (rotation legs need both)
   strategy: StrategyQuote;
   createdAt: number;
   modelVersion: string;

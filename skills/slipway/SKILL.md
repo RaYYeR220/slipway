@@ -108,6 +108,7 @@ Report the failed check in one line and offer its `fix` verbatim:
 | `PRICE_INTEGRITY` (hold) | Perp index sources disagree or rToken/perp prices diverged | Wait for prices to re-converge |
 | `DATA_STALE` | Plan or live book too old | Re-plan on fresh data |
 | `PROFILE` | Uses perps / sessions the profile excludes | Re-plan under the profile |
+| `DEADLINE` | The last child lands after the trader's deadline | A strategy that finishes in time, or a later deadline |
 | `SOURCE_MISSING` | A critical input (book, session state) is unavailable | Restore the feed and re-plan |
 
 A refusal is the desk working, not an error: re-price with the fix applied (smaller size,

@@ -43,6 +43,7 @@ describe("runGate — allow path", () => {
       "EVENT_WINDOW",
       "PRICE_INTEGRITY",
       "PROFILE",
+      "DEADLINE",
       "SOURCE_MISSING",
     ]);
     expect(r.checks.every((c) => c.status === "pass")).toBe(true);
@@ -263,5 +264,34 @@ describe("largestQtyUnderCap", () => {
     };
     expect(price(must(q))).toBeLessThanOrEqual(cap);
     expect(price(must(q) * 1.01)).toBeGreaterThan(cap);
+  });
+});
+
+describe("DEADLINE", () => {
+  it("refuses a plan whose last slice lands after the deadline and names one that fits", async () => {
+    const { planExecution, buildPlan } = await import("../src/planner.js");
+    const { runGate } = await import("../src/gate.js");
+    const { nvdaSnapshot } = await import("./market.js");
+    const snap = nvdaSnapshot("overnight");
+    const profile = {
+      name: "t",
+      urgency: "patient" as const,
+      costCapBps: 1000,
+      maxParticipation: 1,
+      allowPerp: true,
+      maxLeverage: 1,
+      avoidSessions: [],
+      avoidEvents: false,
+    };
+    const deadline = snap.now + 10 * 60_000;
+    const intent = { symbol: "NVDA", side: "buy" as const, notionalUsd: 250_000, deadline };
+    const result = planExecution(intent, profile, snap);
+    const late = result.candidates.find((c) => c.slices.some((s) => s.t > deadline));
+    if (!late) throw new Error("expected at least one strategy running past ten minutes");
+    const gate = runGate({ plan: buildPlan(result, late.id), snapshot: snap, profile, now: snap.now, candidates: result.candidates });
+    const check = gate.checks.find((c) => c.code === "DEADLINE");
+    expect(check?.status).toBe("refuse");
+    expect(check?.fix).toMatch(/finishes in time|move the deadline/);
+    expect(gate.verdict).toBe("refuse");
   });
 });
