@@ -1,0 +1,36 @@
+{
+  "name": "@slipway/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Slipway: read-only and dry-run execution-desk tools plus an MCP Apps plan card, over Streamable HTTP or stdio.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "slipway-mcp": "dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "2.0.3",
+    "@modelcontextprotocol/server": "2.3.1",
+    "@slipway/agent": "workspace:^",
+    "@slipway/core": "workspace:^",
+    "@slipway/sdk": "workspace:^",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1"
+  }
+}

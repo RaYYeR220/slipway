@@ -1,5 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "outDir": "dist", "rootDir": "src" },
-  "include": ["src"]
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@slipway/core": ["../core/src/index.ts"],
+      "@slipway/bitget": ["../bitget/src/index.ts"],
+      "@slipway/sdk": ["../sdk/src/index.ts"],
+      "@slipway/agent": ["../agent/src/index.ts"]
+    }
+  },
+  "include": ["src", "test"]
 }
