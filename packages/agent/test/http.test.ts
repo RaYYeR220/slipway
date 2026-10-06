@@ -105,6 +105,9 @@ describe("HTTP route handlers (web Request -> Response)", () => {
     expect((await chat("10.0.0.1", tooLong)).status).toBe(400);
     const statuses: number[] = [];
     for (let i = 0; i < 8; i++) statuses.push((await chat("10.0.0.2", tooLong)).status);
+    const spoofed: number[] = [];
+    for (let i = 0; i < 8; i++) spoofed.push((await chat(`1.1.1.${i}, 10.0.0.3`, tooLong)).status);
+    expect(spoofed.filter((s) => s === 429).length).toBeGreaterThan(0);
     expect(statuses.filter((s) => s === 429).length).toBeGreaterThan(0);
   });
 });

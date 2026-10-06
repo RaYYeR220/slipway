@@ -70,24 +70,37 @@ async function body(req: Request): Promise<unknown> {
   }
 }
 
-// The public demo needs no credentials, so the model route is bounded instead: a per-client token bucket
-// (best effort per server instance), a cap on conversation length, and a cap on characters sent upstream.
-const CHAT_LIMIT = { burst: 6, perMinute: 6, maxMessages: 24, maxChars: 24_000 };
+// The public demo needs no credentials, so the model route is bounded instead: a per-client token bucket, a
+// global ceiling that key rotation cannot exceed, a cap on conversation length and on characters sent upstream.
+// Buckets live per server instance, so these are best-effort bounds, backed by the provider account's own limit.
+const CHAT_LIMIT = { burst: 6, perMinute: 6, globalPerMinute: 60, maxMessages: 24, maxChars: 24_000 };
+const IDLE_MS = 10 * 60_000;
 const buckets = new Map<string, { tokens: number; at: number }>();
+const global = { tokens: CHAT_LIMIT.globalPerMinute, at: Date.now() };
 
+// The client address comes from headers the hosting edge sets and overwrites (Vercel's own header, then
+// x-real-ip, then the right-most x-forwarded-for hop, which the edge appends) — never the client-supplied left end.
 function clientKey(req: Request): string {
-  const fwd = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return fwd || req.headers.get("x-real-ip") || "anon";
+  const vercel = req.headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
+  const real = req.headers.get("x-real-ip")?.trim();
+  const hops = req.headers.get("x-forwarded-for")?.split(",").map((h) => h.trim()).filter(Boolean) ?? [];
+  return vercel || real || hops[hops.length - 1] || "anon";
+}
+
+function refill(b: { tokens: number; at: number }, cap: number, perMinute: number, now: number): void {
+  b.tokens = Math.min(cap, b.tokens + ((now - b.at) / 60_000) * perMinute);
+  b.at = now;
 }
 
 function takeToken(key: string, now: number): boolean {
+  if (buckets.size > 10_000) for (const [k, v] of buckets) if (now - v.at > IDLE_MS) buckets.delete(k);
   const b = buckets.get(key) ?? { tokens: CHAT_LIMIT.burst, at: now };
-  b.tokens = Math.min(CHAT_LIMIT.burst, b.tokens + ((now - b.at) / 60_000) * CHAT_LIMIT.perMinute);
-  b.at = now;
-  if (buckets.size > 10_000) buckets.clear();
+  refill(b, CHAT_LIMIT.burst, CHAT_LIMIT.perMinute, now);
+  refill(global, CHAT_LIMIT.globalPerMinute, CHAT_LIMIT.globalPerMinute, now);
   buckets.set(key, b);
-  if (b.tokens < 1) return false;
+  if (b.tokens < 1 || global.tokens < 1) return false;
   b.tokens -= 1;
+  global.tokens -= 1;
   return true;
 }
 
