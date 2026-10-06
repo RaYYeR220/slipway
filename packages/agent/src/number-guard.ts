@@ -4,18 +4,18 @@
 
 export interface NumberToken {
   raw: string;
-  index: number;
-  value: number; // in natural units (suffixes applied)
+  index: number; // offset in the normalised text
+  value: number; // in natural units (suffixes applied); NaN for verbatim-only tokens
   display: number; // as written, before suffix scaling
   decimals: number;
   signed: boolean; // an explicit + or − was written
-  unit: "" | "%" | "k" | "M" | "B" | "time" | "date" | "glued";
+  unit: "" | "%" | "k" | "M" | "B" | "time" | "date" | "word";
 }
 
 export interface GuardResult {
   ok: boolean;
   unverified: NumberToken[];
-  redacted: string;
+  redacted: string; // normalised text with unverified tokens masked
 }
 
 export interface GuardOptions {
@@ -27,24 +27,31 @@ const DATE = /(?<![\w:.-])(\d{4}-\d{2}-\d{2})(?![\w:])/g;
 const TIME = /(?<![\w:.])(\d{1,2}:\d{2})(?![\w:])/g;
 const NUM =
   /(?<![\w:.,·-])([-−+])?\$?((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)(?:(%)|(k|K|M|B|bn|bps|bp|h|m|s|d|x)(?![a-zA-Z]))?(?![\w:]|[.,]\d)/g;
-// Identifiers that legitimately contain digits. Everything else with a digit in it is checked.
-const IDENTIFIERS = [
-  /\b0x[0-9a-fA-F]{4,}\b/g, // addresses, hashes
-  /\b[a-z_]+(?::[A-Za-z0-9_]+)+\b/g, // strategy ids such as sliced:perp:n12:t900
-  /\bR?[A-Z]{2,6}USDT\b/g, // exchange symbols
-  /\b[vV]\d+(?:\.\d+)*\b/g, // versions
-];
+// A run of identifier-ish characters; if it holds a digit no number token explains, it is checked verbatim.
+const WORD = /[\p{L}\p{N}_.,:/-]*\p{Nd}[\p{L}\p{N}_.,:/-]*/gu;
 
 const MULT: Record<string, number> = { k: 1e3, K: 1e3, M: 1e6, B: 1e9, bn: 1e9 };
 const REL_TOL = 0.05;
 
+/** NFKC plus removal of invisible format characters (zero-width joiners, bidi marks). */
+export function normalise(text: string): string {
+  return text.normalize("NFKC").replace(/\p{Cf}/gu, "");
+}
+
 export function extractNumbers(input: string): NumberToken[] {
-  const text = input.normalize("NFKC");
+  const text = normalise(input);
   const out: NumberToken[] = [];
   const covered: [number, number][] = [];
   const free = (a: number, b: number) => !covered.some(([x, y]) => a < y && b > x);
-
-  for (const re of IDENTIFIERS) for (const m of text.matchAll(re)) covered.push([m.index, m.index + m[0].length]);
+  const verbatim = (raw: string, index: number, unit: "time" | "date" | "word"): NumberToken => ({
+    raw,
+    index,
+    value: Number.NaN,
+    display: Number.NaN,
+    decimals: 0,
+    signed: false,
+    unit,
+  });
 
   for (const [re, unit] of [
     [DATE, "date"],
@@ -54,7 +61,7 @@ export function extractNumbers(input: string): NumberToken[] {
       const raw = m[1] as string;
       if (!free(m.index, m.index + raw.length)) continue;
       covered.push([m.index, m.index + raw.length]);
-      out.push({ raw, index: m.index, value: Number.NaN, display: Number.NaN, decimals: 0, signed: false, unit });
+      out.push(verbatim(raw, m.index, unit));
     }
   }
 
@@ -68,7 +75,15 @@ export function extractNumbers(input: string): NumberToken[] {
     const frac = digits.split(".")[1];
     const display = sign * Number(digits);
     const scale = m[4] && m[4] in MULT ? m[4] : undefined;
-    const unit: NumberToken["unit"] = m[3] ? "%" : scale ? (scale === "K" ? "k" : scale === "bn" ? "B" : (scale as "k" | "M" | "B")) : "";
+    const unit: NumberToken["unit"] = m[3]
+      ? "%"
+      : scale === "K" || scale === "k"
+        ? "k"
+        : scale === "bn" || scale === "B"
+          ? "B"
+          : scale === "M"
+            ? "M"
+            : "";
     out.push({
       raw: m[0],
       index: start,
@@ -80,31 +95,30 @@ export function extractNumbers(input: string): NumberToken[] {
     });
   }
 
-  // Any digit left uncovered sits inside a word ("x9bp", "8,5bp"): unparseable, so it can never be verified.
-  for (const m of text.matchAll(/[\p{L}\p{N}_.,]*\p{Nd}[\p{L}\p{N}_.,]*/gu)) {
-    const word = m[0].replace(/[.,]+$/, "");
+  // Digits inside words ("x9bp", "8,5bp", "cost:79bps", "0x06cD", "sliced:perp:n12:t900") are never parsed as
+  // numbers; such a word passes only if a tool or the user produced it verbatim.
+  for (const m of text.matchAll(WORD)) {
+    const word = m[0].replace(/[.,:/-]+$/, "");
     const a = m.index;
-    const b = a + word.length;
-    let digitFree = false;
-    for (let i = a; i < b; i++) {
+    let unexplained = false;
+    for (let i = a; i < a + word.length; i++) {
       if (/\p{Nd}/u.test(text[i] as string) && free(i, i + 1)) {
-        digitFree = true;
+        unexplained = true;
         break;
       }
     }
-    if (digitFree) {
-      out.push({ raw: word, index: a, value: Number.NaN, display: Number.NaN, decimals: 0, signed: false, unit: "glued" });
-    }
+    if (unexplained) out.push(verbatim(word, a, "word"));
   }
   return out.sort((a, b) => a.index - b.index);
 }
 
+// Candidates are numeric fields and array lengths only. Numbers inside free-text strings (headlines,
+// assumptions, echoed input) are not candidates, so injected text cannot vouch for a figure.
 function collect(value: unknown, nums: number[], strings: string[]): void {
   if (typeof value === "number") {
     if (Number.isFinite(value)) nums.push(value);
   } else if (typeof value === "string") {
-    strings.push(value);
-    for (const t of extractNumbers(value)) if (Number.isFinite(t.value)) nums.push(t.value);
+    strings.push(normalise(value));
   } else if (Array.isArray(value)) {
     nums.push(value.length);
     for (const v of value) collect(v, nums, strings);
@@ -125,7 +139,7 @@ function matches(tok: NumberToken, candidates: number[]): boolean {
   for (const y of candidates) {
     const forms = tok.unit === "%" ? [y, y * 100] : [y / mult];
     for (const f of forms) {
-      if (tok.signed && Math.sign(f) !== Math.sign(tok.display) && f !== 0) continue;
+      if (tok.signed && f !== 0 && Math.sign(f) !== Math.sign(tok.display)) continue;
       const shown = tok.signed ? roundTo(f, tok.decimals) : roundTo(Math.abs(f), tok.decimals);
       const target = tok.signed ? tok.display : Math.abs(tok.display);
       if (Math.abs(shown - target) > 1e-9) continue;
@@ -140,28 +154,34 @@ export function checkNumbers(text: string, toolOutputs: unknown[], opts: GuardOp
   const nums: number[] = [];
   const strings: string[] = [];
   for (const o of toolOutputs) collect(o, nums, strings);
-  const userText = (opts.userText ?? "").normalize("NFKC");
+  const userText = normalise(opts.userText ?? "");
   const userNums = extractNumbers(userText)
     .filter((t) => Number.isFinite(t.value))
     .map((t) => t.value);
   const allow = new Set(opts.allow ?? []);
+  const seenVerbatim = (raw: string) => strings.some((s) => s.includes(raw)) || userText.includes(raw);
 
   const unverified: NumberToken[] = [];
   for (const tok of extractNumbers(text)) {
     if (allow.has(tok.raw)) continue;
-    if (tok.unit === "glued") {
-      unverified.push(tok);
-    } else if (tok.unit === "time" || tok.unit === "date") {
-      if (!strings.some((s) => s.includes(tok.raw)) && !userText.includes(tok.raw)) unverified.push(tok);
+    if (tok.unit === "word" || tok.unit === "time" || tok.unit === "date") {
+      if (!seenVerbatim(tok.raw)) unverified.push(tok);
     } else if (!matches(tok, nums) && !matches(tok, userNums)) {
       unverified.push(tok);
     }
   }
 
-  const norm = text.normalize("NFKC");
-  let redacted = norm;
-  for (const tok of [...unverified].sort((a, b) => b.index - a.index)) {
-    redacted = `${redacted.slice(0, tok.index)}[unverified]${redacted.slice(tok.index + tok.raw.length)}`;
-  }
+  // Overlapping tokens (a number inside a rejected word) collapse into the widest span when masking.
+  const spans = unverified
+    .map((t) => [t.index, t.index + t.raw.length] as [number, number])
+    .sort((a, b) => a[0] - b[0])
+    .reduce<[number, number][]>((acc, s) => {
+      const last = acc[acc.length - 1];
+      if (last && s[0] < last[1]) last[1] = Math.max(last[1], s[1]);
+      else acc.push([...s]);
+      return acc;
+    }, []);
+  let redacted = normalise(text);
+  for (const [a, b] of spans.reverse()) redacted = `${redacted.slice(0, a)}[unverified]${redacted.slice(b)}`;
   return { ok: unverified.length === 0, unverified, redacted };
 }

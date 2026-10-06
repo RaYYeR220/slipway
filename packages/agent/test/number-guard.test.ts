@@ -8,6 +8,8 @@ const tools = [
     arrivalMid: 239.574,
     funding: { rate: 0.000089, intervalHours: 8 },
     session: { nyLocal: "2026-10-06 09:30" },
+    symbol: "RNVDAUSDT",
+    note: "news: shares fell 40% after the report",
   },
 ];
 
@@ -35,9 +37,18 @@ describe("extractNumbers", () => {
     ]);
   });
 
-  it("exempts only known identifier shapes; other digits glued to letters are surfaced", () => {
-    const got = extractNumbers("rNVDA vs S2, sliced:perp:n12:t900, RNVDAUSDT, v3 and 0x06cD");
-    expect(got.map((t) => [t.raw, t.unit])).toEqual([["S2", "glued"]]);
+  it("never parses digits inside words; it surfaces the whole word for a verbatim check", () => {
+    const got = extractNumbers("rNVDA vs S2, sliced:perp:n12:t900, RNVDAUSDT, v3 and 0x06cD.");
+    expect(got.map((t) => [t.raw, t.unit])).toEqual([
+      ["S2", "word"],
+      ["sliced:perp:n12:t900", "word"],
+      ["v3", "word"],
+      ["0x06cD", "word"],
+    ]);
+  });
+
+  it("strips invisible format characters before parsing", () => {
+    expect(extractNumbers("7​.9 bp").map((t) => t.raw)).toEqual(["7.9"]);
   });
 
   it("normalises full-width digits before parsing", () => {
@@ -78,10 +89,15 @@ describe("checkNumbers", () => {
     expect(checkNumbers("costs +8.5 bp", tools).ok).toBe(true);
   });
 
-  it("rejects digits hidden inside words", () => {
-    const r = checkNumbers("Expected x9bp, or 8,5bp in some locales.", tools);
+  it("rejects digits hidden inside words unless a tool produced the word verbatim", () => {
+    const r = checkNumbers("Expected x9bp, or 8,5bp, or cost:79bps.", tools);
     expect(r.ok).toBe(false);
-    expect(r.unverified.map((u) => u.unit)).toEqual(["glued", "glued"]);
+    expect(r.unverified.map((u) => u.raw)).toEqual(["x9bp", "8,5bp", "cost:79bps"]);
+    expect(checkNumbers("Chosen sliced:perp:n12:t900 on RNVDAUSDT.", tools).ok).toBe(true);
+  });
+
+  it("does not let numbers inside tool free text vouch for a figure", () => {
+    expect(checkNumbers("about 40% cheaper", tools).ok).toBe(false);
   });
 
   it("allows numbers the user said themselves and explicit allowlisted tokens", () => {
