@@ -34,25 +34,61 @@ function fail(e: unknown): Response {
     const message = e.issues.map((i) => `${i.path.join(".") || "body"}: ${i.message}`).join("; ");
     return json({ error: { code: "BAD_INPUT", message }, sources: [] } satisfies ApiError, 400);
   }
-  return json(
-    {
-      error: { code: "ERROR", message: e instanceof Error ? e.message : String(e) },
-      sources: [],
-    } satisfies ApiError,
-    500,
-  );
+  // Unexpected errors can carry upstream URLs or internals: log them, answer generically.
+  console.error("slipway api error", e);
+  return json({ error: { code: "ERROR", message: "internal error" }, sources: [] } satisfies ApiError, 500);
 }
 
+// Reads at most MAX_BODY bytes, whatever Content-Length claims, so an unbounded stream cannot exhaust memory.
 async function body(req: Request): Promise<unknown> {
-  const len = Number(req.headers.get("content-length") ?? 0);
-  if (len > MAX_BODY) throw new DeskError(`body larger than ${MAX_BODY} bytes`, "BAD_INPUT");
-  const text = await req.text();
-  if (text.length > MAX_BODY) throw new DeskError(`body larger than ${MAX_BODY} bytes`, "BAD_INPUT");
+  const declared = Number(req.headers.get("content-length") ?? 0);
+  if (declared > MAX_BODY) throw new DeskError(`body larger than ${MAX_BODY} bytes`, "BAD_INPUT");
+  const reader = req.body?.getReader();
+  if (!reader) throw new DeskError("body is not JSON", "BAD_INPUT");
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_BODY) {
+      await reader.cancel();
+      throw new DeskError(`body larger than ${MAX_BODY} bytes`, "BAD_INPUT");
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const c of chunks) {
+    bytes.set(c, offset);
+    offset += c.byteLength;
+  }
   try {
-    return JSON.parse(text);
+    return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     throw new DeskError("body is not JSON", "BAD_INPUT");
   }
+}
+
+// The public demo needs no credentials, so the model route is bounded instead: a per-client token bucket
+// (best effort per server instance), a cap on conversation length, and a cap on characters sent upstream.
+const CHAT_LIMIT = { burst: 6, perMinute: 6, maxMessages: 24, maxChars: 24_000 };
+const buckets = new Map<string, { tokens: number; at: number }>();
+
+function clientKey(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return fwd || req.headers.get("x-real-ip") || "anon";
+}
+
+function takeToken(key: string, now: number): boolean {
+  const b = buckets.get(key) ?? { tokens: CHAT_LIMIT.burst, at: now };
+  b.tokens = Math.min(CHAT_LIMIT.burst, b.tokens + ((now - b.at) / 60_000) * CHAT_LIMIT.perMinute);
+  b.at = now;
+  if (buckets.size > 10_000) buckets.clear();
+  buckets.set(key, b);
+  if (b.tokens < 1) return false;
+  b.tokens -= 1;
+  return true;
 }
 
 const TicketsRequestSchema = z.object({
@@ -121,7 +157,14 @@ export function createApiHandlers(desk: Desk = new Desk(), agent: AgentOptions =
       guard(async () => json({ ...(await desk.publicKey()), domain: "slipway-plan-v1" } satisfies KeysData)),
     chat: (req) =>
       guard(async () => {
+        if (!takeToken(clientKey(req), Date.now()))
+          return json(
+            { error: { code: "BAD_INPUT", message: "too many requests, wait a minute" }, sources: [] },
+            429,
+          );
         const b = ChatRequestSchema.parse(await body(req));
+        if (b.messages.length > CHAT_LIMIT.maxMessages || JSON.stringify(b.messages).length > CHAT_LIMIT.maxChars)
+          throw new DeskError("conversation too long, start a new one", "BAD_INPUT");
         return runTurn(
           { messages: b.messages as unknown as UIMessage[], profile: b.profile ?? DEFAULT_PROFILE },
           { desk, ...agent },

@@ -72,4 +72,39 @@ describe("HTTP route handlers (web Request -> Response)", () => {
     expect((await api.dispatch(get("/api/nothing"))).status).toBe(404);
     expect((await api.dispatch(post("/api/tickets", { signedPlan: { hash: "x" } }))).status).toBe(400);
   });
+
+  it("caps request bodies by bytes read, not by the declared length", async () => {
+    const big = "x".repeat(600 * 1024);
+    const stream = new ReadableStream({
+      start(c) {
+        c.enqueue(new TextEncoder().encode(`{"intent":"${big}"}`));
+        c.close();
+      },
+    });
+    const req = new Request("http://slipway.test/api/plan/options", {
+      method: "POST",
+      body: stream,
+      duplex: "half",
+    } as RequestInit);
+    const res = await api.dispatch(req);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error.message).toMatch(/larger than/);
+  });
+
+  it("rate-limits the model route per client and bounds conversation length", async () => {
+    const chatApi = createApiHandlers(recordedDesk());
+    const chat = (ip: string, messages: unknown[]) =>
+      chatApi.dispatch(
+        new Request("http://slipway.test/api/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-forwarded-for": ip },
+          body: JSON.stringify({ messages }),
+        }),
+      );
+    const tooLong = Array.from({ length: 30 }, () => ({ role: "user", parts: [] }));
+    expect((await chat("10.0.0.1", tooLong)).status).toBe(400);
+    const statuses: number[] = [];
+    for (let i = 0; i < 8; i++) statuses.push((await chat("10.0.0.2", tooLong)).status);
+    expect(statuses.filter((s) => s === 429).length).toBeGreaterThan(0);
+  });
 });
