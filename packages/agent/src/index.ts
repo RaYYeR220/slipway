@@ -1,1 +1,1 @@
-export * from "./number-guard.js";
+export * from "./slots.js";
