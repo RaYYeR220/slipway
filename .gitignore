@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.next/
+.vercel/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+# local data
+data/raw/
+data/tmp/
+# contracts
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
