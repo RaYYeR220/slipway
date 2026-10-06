@@ -1,0 +1,21 @@
+{
+  "name": "slipway-eval",
+  "version": 1,
+  "purpose": "Pre-registered evaluation of execution-cost forecasts and execution strategies on Bitget tokenized US stocks (rToken spot and stock perps), graded against the recorded public order book.",
+  "universe": ["NVDA","TSLA","AAPL","MSFT","AMZN","GOOGL","META","AMD","MU","INTC","MSTR","COIN","CRCL","HOOD","PLTR","SPY","QQQ","SOXL"],
+  "venues": ["rtoken","perp"],
+  "orderSizesUsd": [5000, 25000, 100000],
+  "sides": ["buy","sell"],
+  "cadence": { "everyMinutes": 10, "ordersPerBatch": 12, "sampling": "mulberry32(seed ^ batchStartEpochMinutes) draws symbol, size, side uniformly with replacement" },
+  "seed": 20261006,
+  "profile": { "name": "eval-normal", "urgency": "normal", "costCapBps": 1000, "maxParticipation": 0.2, "allowPerp": true, "maxLeverage": 1, "avoidSessions": [], "avoidEvents": false },
+  "strategiesForecast": ["immediate:rtoken","immediate:perp","twap60:rtoken","twap60:perp","best:sliced","best:passive","best:wait","best:perp_then_rotate","chosen"],
+  "grading": {
+    "bookMatch": "nearest recorded books15 snapshot within 2 s of the slice time, same instrument; slices with no snapshot within 2 s are reported as ungraded, never imputed",
+    "realizedCost": "walk of the matched real book for the slice quantity, in bps of the arrival mid, plus the venue taker fee read from Bitget's public symbol/contract endpoints",
+    "ownImpact": ["shadow: each slice walks the real book as recorded (no carry-over of our own depletion) - label REPRODUCIBLE", "modeled: carry-over with the estimated resilience half-life - label MODELED", "no-refill bound: cumulative depletion persists within the order - label BOUND"],
+    "metrics": ["MAE and bias of predicted p50 vs realized, by venue x session x horizon bucket [0-60s, 1-15m, 15m-6h, >6h]", "coverage of the p10-p90 band", "head-to-head realized cost: chosen vs immediate vs twap60 per order, win rate and mean difference with bootstrap 95% CI (2000 resamples)", "calibration: per venue x session multiplicative factor fitted on earlier batches, evaluated on later batches only (time split)", "source ablation: share of orders whose chosen strategy changes and change in realized cost when each source is removed"]
+  },
+  "reporting": "All graded results are published, including strategies or sessions where Slipway loses to a baseline. Forecasts whose outcome time precedes their on-chain anchor are reported as ledger-timestamped only.",
+  "anchoring": { "chain": "arbitrum-one", "every": "30 minutes", "leaf": "keccak256(sha256(canonical ledger entry))", "pairs": "sorted keccak256" }
+}
