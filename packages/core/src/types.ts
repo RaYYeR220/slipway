@@ -64,6 +64,8 @@ export interface Resilience {
   lo: number;
   hi: number;
   n: number;
+  censored?: number; // events not recovered within the censoring horizon (counted at the horizon)
+  persistence?: number; // lag-1 autocorrelation of log depth; ~0 means depth has no memory
 }
 
 export interface LiquidityStats {
@@ -161,8 +163,12 @@ export interface Slice {
   postOnly?: boolean;
   session: Session;
   expectedBps: number;
+  conditional?: boolean; // only the unfilled remainder of the preceding passive slice is sent
+  leg?: "entry" | "rotate_out" | "rotate_in";
 }
 
+// Expected parts (spread + impact + fees + funding = expectedBps) and sd parts
+// (sdBps² = priceRisk² + gapRisk² + basisRisk² + nonFill²).
 export interface CostComponents {
   spread: number;
   impact: number;
@@ -170,7 +176,8 @@ export interface CostComponents {
   funding: number;
   gapRisk: number; // sd contribution, bps
   basisRisk: number; // sd contribution, bps
-  nonFill: number;
+  nonFill: number; // sd contribution of the passive fill/no-fill lottery, bps
+  priceRisk?: number; // sd contribution of the Almgren–Chriss execution interval, bps
 }
 
 export interface StrategyQuote {
@@ -189,7 +196,17 @@ export interface StrategyQuote {
   startsAt: number;
   endsAt: number;
   assumptions: string[];
+  feasible?: boolean; // false = shown on the frontier but never chosen
+  violations?: Violation[];
 }
+
+export type Violation =
+  | "DEADLINE"
+  | "BOOK_EXHAUSTED"
+  | "VENUE_CLOSED"
+  | "PROFILE"
+  | "PARTICIPATION"
+  | "EVENT_WINDOW";
 
 export type CheckStatus = "pass" | "hold" | "refuse";
 
@@ -232,7 +249,7 @@ export interface SignedPlan {
   plan: Plan;
   gate: GateResult;
   hash: string; // sha256 hex of canonical JSON of {plan, gate}
-  sig: string; // Ed25519 signature (base64) of hash
+  sig: string; // Ed25519 signature (base64) of utf8 `slipway-plan-v1:${hash}:${issuedAt}` (binds the issue time)
   pubkey: string; // base64 raw public key
   issuedAt: number;
 }

@@ -1,0 +1,196 @@
+{
+ "source": "Raw keyless Bitget REST responses (fetched 2026-10-06 ~05:10 UTC); `states` is the recorded Reality payload from the tape (2026-10-06T01 UTC)",
+ "spotSymbols": {
+  "RNVDAUSDT": {
+   "symbol": "RNVDAUSDT",
+   "baseCoin": "rNVDA",
+   "quoteCoin": "USDT",
+   "minTradeAmount": "0",
+   "maxTradeAmount": "900000000000000000000",
+   "takerFeeRate": "0.001",
+   "makerFeeRate": "0.001",
+   "pricePrecision": "2",
+   "quantityPrecision": "4",
+   "quotePrecision": "6",
+   "status": "online",
+   "minTradeUSDT": "10",
+   "buyLimitPriceRatio": "0.1",
+   "sellLimitPriceRatio": "0.1",
+   "areaSymbol": "yes",
+   "orderQuantity": "200",
+   "openTime": "1776914552903",
+   "offTime": "",
+   "maxLimitOrderValue": "20000000",
+   "maxMarketOrderValue": "1000000"
+  },
+  "RHOODUSDT": {
+   "symbol": "RHOODUSDT",
+   "baseCoin": "rHOOD",
+   "quoteCoin": "USDT",
+   "minTradeAmount": "0",
+   "maxTradeAmount": "900000000000000000000",
+   "takerFeeRate": "0.001",
+   "makerFeeRate": "0.001",
+   "pricePrecision": "2",
+   "quantityPrecision": "4",
+   "quotePrecision": "6",
+   "status": "online",
+   "minTradeUSDT": "10",
+   "buyLimitPriceRatio": "0.1",
+   "sellLimitPriceRatio": "0.1",
+   "areaSymbol": "yes",
+   "orderQuantity": "200",
+   "openTime": "1780322400000",
+   "offTime": "",
+   "maxLimitOrderValue": "20000000",
+   "maxMarketOrderValue": "1000000"
+  }
+ },
+ "perpContracts": {
+  "NVDAUSDT": {
+   "symbol": "NVDAUSDT",
+   "baseCoin": "NVDA",
+   "quoteCoin": "USDT",
+   "buyLimitPriceRatio": "0.02",
+   "sellLimitPriceRatio": "0.02",
+   "feeRateUpRatio": "0.005",
+   "makerFeeRate": "0.0002",
+   "takerFeeRate": "0.0006",
+   "openCostUpRatio": "0.01",
+   "supportMarginCoins": [
+    "USDT"
+   ],
+   "minTradeNum": "0.01",
+   "priceEndStep": "1",
+   "volumePlace": "2",
+   "pricePlace": "2",
+   "sizeMultiplier": "0.01",
+   "symbolType": "perpetual",
+   "minTradeUSDT": "5",
+   "maxSymbolOrderNum": "200",
+   "maxProductOrderNum": "1000",
+   "maxPositionNum": "200",
+   "symbolStatus": "normal",
+   "offTime": "-1",
+   "limitOpenTime": "-1",
+   "deliveryTime": "",
+   "deliveryStartTime": "",
+   "deliveryPeriod": "",
+   "launchTime": "",
+   "fundInterval": "8",
+   "minLever": "1",
+   "maxLever": "100",
+   "posLimit": "0.2",
+   "maintainTime": "",
+   "openTime": "1769994062273",
+   "maxMarketOrderQty": "9500",
+   "maxOrderQty": "52000",
+   "isRwa": "YES"
+  },
+  "HOODUSDT": {
+   "symbol": "HOODUSDT",
+   "baseCoin": "HOOD",
+   "quoteCoin": "USDT",
+   "buyLimitPriceRatio": "0.02",
+   "sellLimitPriceRatio": "0.02",
+   "feeRateUpRatio": "0.005",
+   "makerFeeRate": "0.0002",
+   "takerFeeRate": "0.0006",
+   "openCostUpRatio": "0.01",
+   "supportMarginCoins": [
+    "USDT"
+   ],
+   "minTradeNum": "0.01",
+   "priceEndStep": "1",
+   "volumePlace": "2",
+   "pricePlace": "2",
+   "sizeMultiplier": "0.01",
+   "symbolType": "perpetual",
+   "minTradeUSDT": "5",
+   "maxSymbolOrderNum": "200",
+   "maxProductOrderNum": "1000",
+   "maxPositionNum": "200",
+   "symbolStatus": "normal",
+   "offTime": "-1",
+   "limitOpenTime": "-1",
+   "deliveryTime": "",
+   "deliveryStartTime": "",
+   "deliveryPeriod": "",
+   "launchTime": "",
+   "fundInterval": "8",
+   "minLever": "1",
+   "maxLever": "20",
+   "posLimit": "0.2",
+   "maintainTime": "",
+   "openTime": "1769994064119",
+   "maxMarketOrderQty": "18000",
+   "maxOrderQty": "96000",
+   "isRwa": "YES"
+  }
+ },
+ "stockInfo": {
+  "RNVDAUSDT": {
+   "symbol": "RNVDAUSDT",
+   "code": "NVDA",
+   "name": null,
+   "tradingPeriod": [
+    "overnight",
+    "pre_market",
+    "regular",
+    "after_hours"
+   ],
+   "weekendTradable": "yes"
+  },
+  "RHOODUSDT": {
+   "symbol": "RHOODUSDT",
+   "code": "HOOD",
+   "name": null,
+   "tradingPeriod": [
+    "overnight",
+    "pre_market",
+    "regular",
+    "after_hours"
+   ],
+   "weekendTradable": "yes"
+  }
+ },
+ "states": {
+  "rx": 1791248646873,
+  "data": {
+   "market": "US",
+   "daylightType": "standard",
+   "stateList": [
+    {
+     "state": "pre_market",
+     "timeZone": "EST",
+     "startTime": "04:00",
+     "endTime": "09:30"
+    },
+    {
+     "state": "regular",
+     "timeZone": "EST",
+     "startTime": "09:30",
+     "endTime": "16:00"
+    },
+    {
+     "state": "after_hours",
+     "timeZone": "EST",
+     "startTime": "16:00",
+     "endTime": "20:00"
+    },
+    {
+     "state": "overnight",
+     "timeZone": "EST",
+     "startTime": "20:00",
+     "endTime": "04:00"
+    }
+   ]
+  }
+ },
+ "derived": {
+  "basisSigmaBpsPerSqrtHour": {
+   "NVDA": 4.78,
+   "method": "sd of 1 h changes in log(rNVDA mid / NVDA perp mid) from the recorded REST depth stream (1/min), 2026-10-05T22:04Z..2026-10-06T03:59Z, n=295 overlapping hours; basis level p10/p50/p90 = -9.6/-6.2/-1.5 bps"
+  }
+ }
+}
