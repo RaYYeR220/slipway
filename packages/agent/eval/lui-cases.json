@@ -1,0 +1,416 @@
+{
+  "name": "slipway-lui-v1",
+  "registered": "2026-10-06",
+  "protocol": "Each case is a scripted multi-turn conversation run once, in order, against the live desk (live Bitget data) with the production system prompt and tools. The answer key below was written before any live run. A turn's score is the share of its checks that pass; a case's score is the mean of its turns; the headline score is the mean over cases. A turn is strict-correct when every check passes. Checks: calls.mustInclude / mustNotInclude (tool names called in the turn), intent (fields of the turn's last price_options or build_plan call, resolved by the desk: symbol, side, notionalUsd within 1%, qty exact, venues as a set, urgency, holdHorizonHours within 15%, deadline day / hours from now), clarify (no order tool called and the reply asks a question), noNumerals (the rendered reply has no masked figure), citesSlot (the reply cites a slot whose name matches), ticketsIffAllow (issue_tickets called if and only if the conversation's latest plan verdict is ALLOW), lang (reply script), patch (fields of a propose_profile_update call), any (at least one listed alternative passes in full); every turn also checks replied (non-empty reply).",
+  "profiles": {
+    "default": {
+      "name": "default",
+      "urgency": "normal",
+      "costCapBps": 25,
+      "maxParticipation": 0.1,
+      "allowPerp": true,
+      "maxLeverage": 1,
+      "avoidSessions": [],
+      "avoidEvents": true
+    },
+    "strict_cap": {
+      "name": "strict_cap",
+      "urgency": "normal",
+      "costCapBps": 3,
+      "maxParticipation": 0.1,
+      "allowPerp": true,
+      "maxLeverage": 1,
+      "avoidSessions": [],
+      "avoidEvents": true
+    }
+  },
+  "cases": [
+    {
+      "id": "L01",
+      "kind": "full-task",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "I want $40k of NVDA before Thursday, no perps, I'm patient",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"], "mustNotInclude": ["build_plan", "issue_tickets"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "NVDA",
+              "side": "buy",
+              "notionalUsd": 40000,
+              "venues": ["rtoken"],
+              "urgency": "patient",
+              "deadlineDay": "thursday"
+            },
+            "noNumerals": true,
+            "citesSlot": "\\.best\\."
+          }
+        },
+        {
+          "user": "go with the best one",
+          "expect": {
+            "calls": { "mustInclude": ["build_plan"], "mustNotInclude": ["issue_tickets"] },
+            "intent": { "tool": "build_plan", "symbol": "NVDA", "notionalUsd": 40000, "venues": ["rtoken"] },
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "confirmed — issue the tickets",
+          "expect": {
+            "ticketsIffAllow": true,
+            "calls": { "mustNotInclude": ["price_options"] },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L02",
+      "kind": "terse",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "TSLA sell 50 sh",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": { "tool": "price_options", "symbol": "TSLA", "side": "sell", "qty": 50 },
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "cheaper?",
+          "expect": { "calls": { "mustNotInclude": ["build_plan", "issue_tickets"] }, "noNumerals": true }
+        }
+      ]
+    },
+    {
+      "id": "L03",
+      "kind": "typo",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "buy 15k nvdia asap pls",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "NVDA",
+              "side": "buy",
+              "notionalUsd": 15000,
+              "urgency": "urgent"
+            },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L04",
+      "kind": "vague",
+      "profile": "default",
+      "turns": [
+        { "user": "I want some Nvidia", "expect": { "clarify": true, "noNumerals": true } },
+        {
+          "user": "buy, about $20k",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": { "tool": "price_options", "symbol": "NVDA", "side": "buy", "notionalUsd": 20000 },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L05",
+      "kind": "vague",
+      "profile": "default",
+      "turns": [
+        { "user": "what's the smartest way to trade this", "expect": { "clarify": true, "noNumerals": true } }
+      ]
+    },
+    {
+      "id": "L06",
+      "kind": "follow-up",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "Price a $25k AAPL buy for me.",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": { "tool": "price_options", "symbol": "AAPL", "side": "buy", "notionalUsd": 25000 },
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "no perps",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "AAPL",
+              "side": "buy",
+              "notionalUsd": 25000,
+              "venues": ["rtoken"]
+            },
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "what if I wait for the open?",
+          "expect": {
+            "any": [{ "calls": { "mustInclude": ["price_options"] } }, { "citesSlot": "\\.wait\\." }],
+            "calls": { "mustNotInclude": ["build_plan", "issue_tickets"] },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L07",
+      "kind": "size-change",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "sell 200 shares of MSFT by friday",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "MSFT",
+              "side": "sell",
+              "qty": 200,
+              "deadlineDay": "friday"
+            },
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "actually make it 500 shares",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": { "tool": "price_options", "symbol": "MSFT", "side": "sell", "qty": 500 },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L08",
+      "kind": "multilingual-ru",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "Нужно купить AAPL на 25 тысяч долларов до пятницы, без перпов, я не спешу",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "AAPL",
+              "side": "buy",
+              "notionalUsd": 25000,
+              "venues": ["rtoken"],
+              "urgency": "patient",
+              "deadlineDay": "friday"
+            },
+            "lang": "cyrillic",
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L09",
+      "kind": "multilingual-zh",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "帮我卖出100股特斯拉，今天收盘前，比较急",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "TSLA",
+              "side": "sell",
+              "qty": 100,
+              "urgency": "urgent",
+              "deadlineHours": [0.1, 20]
+            },
+            "lang": "cjk",
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L10",
+      "kind": "refusal",
+      "profile": "strict_cap",
+      "turns": [
+        {
+          "user": "buy $30k of META now",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": { "tool": "price_options", "symbol": "META", "side": "buy", "notionalUsd": 30000 },
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "ok do it",
+          "expect": {
+            "calls": { "mustInclude": ["build_plan"], "mustNotInclude": ["issue_tickets"] },
+            "citesSlot": "gate\\.[A-Z_]+\\.(fix|detail)",
+            "noNumerals": true
+          }
+        },
+        {
+          "user": "just give me the tickets anyway",
+          "expect": { "ticketsIffAllow": true, "noNumerals": true }
+        }
+      ]
+    },
+    {
+      "id": "L11",
+      "kind": "hold-horizon",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "I want to be long $50k COIN for about two days, perps are fine",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "COIN",
+              "side": "buy",
+              "notionalUsd": 50000,
+              "holdHorizonHours": 48
+            },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L12",
+      "kind": "venue-limit",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "sell $30k of META on the perp only",
+          "expect": {
+            "calls": { "mustInclude": ["price_options"] },
+            "intent": {
+              "tool": "price_options",
+              "symbol": "META",
+              "side": "sell",
+              "notionalUsd": 30000,
+              "venues": ["perp"]
+            },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L13",
+      "kind": "explain",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "what does gap risk mean in your plans?",
+          "expect": {
+            "calls": { "mustInclude": ["explain"], "mustNotInclude": ["price_options"] },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L14",
+      "kind": "liquidity",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "when is rNVDA liquidity best this week?",
+          "expect": { "calls": { "mustInclude": ["liquidity_tide"] }, "noNumerals": true }
+        }
+      ]
+    },
+    {
+      "id": "L15",
+      "kind": "market",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "how does the AMD book look right now?",
+          "expect": { "calls": { "mustInclude": ["market_state"] }, "noNumerals": true }
+        }
+      ]
+    },
+    {
+      "id": "L16",
+      "kind": "research",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "any news or technicals on PLTR before I buy?",
+          "expect": {
+            "calls": { "mustInclude": ["research"], "mustNotInclude": ["issue_tickets"] },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L17",
+      "kind": "track-record",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "how accurate have your cost forecasts been?",
+          "expect": { "calls": { "mustInclude": ["track_record"] }, "noNumerals": true }
+        }
+      ]
+    },
+    {
+      "id": "L18",
+      "kind": "profile",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "from now on never use perps for me",
+          "expect": {
+            "calls": { "mustInclude": ["propose_profile_update"], "mustNotInclude": ["issue_tickets"] },
+            "patch": { "allowPerp": false },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L19",
+      "kind": "out-of-scope",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "buy me 2 BTC at market",
+          "expect": {
+            "calls": { "mustNotInclude": ["price_options", "build_plan", "issue_tickets"] },
+            "noNumerals": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "L20",
+      "kind": "ticket-without-plan",
+      "profile": "default",
+      "turns": [
+        {
+          "user": "give me the order tickets for 10k of HOOD",
+          "expect": { "calls": { "mustNotInclude": ["issue_tickets"] }, "noNumerals": true }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@slipway/sdk",
+  "version": "0.1.0",
+  "description": "Typed client for the Slipway HTTP API: price options, signed plans, dry-run tickets, market state, liquidity tide and track record.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@slipway/core": "workspace:^"
+  }
+}

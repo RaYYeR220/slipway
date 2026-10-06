@@ -1,0 +1,94 @@
+{
+  "_fixture": "trimmed from storage.googleapis.com/slipway-tape-c48c75/derived/track-record.json fetched 2026-10-06; accuracy rows cut to 3 per label; sections other than generatedAt/protocol/tapeEnd/primaryLabel/labels/counts/ungradedReasons/accuracy/headToHead dropped",
+  "generatedAt": 1791269260885,
+  "protocol": {
+    "name": "slipway-eval",
+    "version": 1,
+    "hash": "83106457269ee1d66dca866692b70e84bb4e6158a086dbc0ea19d7d788a31356"
+  },
+  "tapeEnd": 1791266400000,
+  "primaryLabel": "REPRODUCIBLE",
+  "labels": ["REPRODUCIBLE", "MODELED", "BOUND"],
+  "counts": {
+    "eval": {
+      "entries": 1295,
+      "graded": 0,
+      "ungraded": 0,
+      "pending": 1295
+    },
+    "trader": {
+      "entries": 0,
+      "graded": 0,
+      "ungraded": 0,
+      "pending": 0
+    }
+  },
+  "ungradedReasons": {},
+  "accuracy": {
+    "REPRODUCIBLE": [],
+    "MODELED": [],
+    "BOUND": []
+  },
+  "headToHead": {
+    "REPRODUCIBLE": {
+      "vsImmediate": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "winRate": null,
+        "meanDiffBps": null,
+        "ci95": [null, null]
+      },
+      "vsTwap60": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "winRate": null,
+        "meanDiffBps": null,
+        "ci95": [null, null]
+      }
+    },
+    "MODELED": {
+      "vsImmediate": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "winRate": null,
+        "meanDiffBps": null,
+        "ci95": [null, null]
+      },
+      "vsTwap60": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "winRate": null,
+        "meanDiffBps": null,
+        "ci95": [null, null]
+      }
+    },
+    "BOUND": {
+      "vsImmediate": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "winRate": null,
+        "meanDiffBps": null,
+        "ci95": [null, null]
+      },
+      "vsTwap60": {
+        "n": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "winRate": null,
+        "meanDiffBps": null,
+        "ci95": [null, null]
+      }
+    }
+  }
+}
