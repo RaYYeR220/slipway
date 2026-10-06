@@ -41,6 +41,21 @@ describe("renderModelText", () => {
     expect(r.flags.map((f) => f.raw.toLowerCase())).toEqual(["eight", "third", "twelve"]);
   });
 
+  it("masks Russian and Chinese numerals but leaves ordinary words alone", () => {
+    const ru = renderModelText("Примерно восемь б.п., в полтора раза дешевле; это стоит дешевле.", slots);
+    expect(ru.flags.map((f) => f.raw)).toEqual(["восемь", "полтора"]);
+    const zh = renderModelText("成本八点五个基点，分三笔执行；一些订单可以等待。", slots);
+    expect(zh.flags.map((f) => f.raw)).toEqual(["八", "五", "三"]);
+    expect(zh.text).toContain("一些订单");
+  });
+
+  it("strips markup that could draw a number without typing one", () => {
+    const r = renderModelText('See ![cost](https://example.com/c.png) and <span style="x">cheap</span>.', slots);
+    expect(r.ok).toBe(false);
+    expect(r.flags.map((f) => f.reason)).toEqual(["markup", "markup", "markup"]);
+    expect(r.text).not.toMatch(/https|<span/);
+  });
+
   it("flags unknown slots instead of inventing a value", () => {
     const r = renderModelText("Saves {{best.savingsBps}} versus TWAP.", slots);
     expect(r.ok).toBe(false);
