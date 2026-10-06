@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v2/mix/market/ticker?symbol=NVDAUSDT&productType=USDT-FUTURES"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262943086,\"data\":[{\"symbol\":\"NVDAUSDT\",\"lastPr\":\"239.64\",\"askPr\":\"239.65\",\"bidPr\":\"239.64\",\"bidSz\":\"494.48\",\"askSz\":\"4.81\",\"high24h\":\"240.46\",\"low24h\":\"235.09\",\"ts\":\"1791262943088\",\"change24h\":\"0.0178\",\"baseVolume\":\"75159.18\",\"quoteVolume\":\"17846559.0338\",\"usdtVolume\":\"17846559.0338\",\"openUtc\":\"240.33\",\"changeUtc24h\":\"-0.00279\",\"indexPrice\":\"239.7833272660864889\",\"fundingRate\":\"0\",\"holdingAmount\":\"52509.699999999923\",\"deliveryStartTime\":null,\"deliveryTime\":null,\"deliveryStatus\":\"\",\"open24h\":\"235.45\",\"markPrice\":\"239.65\"}]}"
+  },
+  "latencyMs": 287,
+  "recordedAt": 1791262943234
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v2/spot/market/orderbook?symbol=RNOSUCHSYMUSDT&type=step0&limit=150"
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"40034\",\"msg\":\"Parameter RNOSUCHSYMUSDT does not exist\",\"requestTime\":1791262951168,\"data\":null}"
+  },
+  "latencyMs": 290,
+  "recordedAt": 1791262951315
+}

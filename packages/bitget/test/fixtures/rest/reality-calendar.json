@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/reality/market/calendar"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262949763,\"data\":{\"timeZone\":\"EST\",\"specificConfig\":[{\"remark\":\"\",\"startTime\":\"2026-06-18 20:00\",\"endTime\":\"2026-06-19 20:00\"},{\"remark\":\"\",\"startTime\":\"2026-07-02 20:00\",\"endTime\":\"2026-07-03 20:00\"},{\"remark\":\"\",\"startTime\":\"2026-09-06 20:00\",\"endTime\":\"2026-09-07 20:00\"}],\"regularConfig\":[\"SATURDAY\",\"SUNDAY\"]}}"
+  },
+  "latencyMs": 307,
+  "recordedAt": 1791262949921
+}

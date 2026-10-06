@@ -24,6 +24,19 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@types/node@24.19.1)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(tsx@4.23.15))
 
+  packages/bitget:
+    dependencies:
+      '@bitget-ai/bitget-agent-sdk':
+        specifier: ^3.3.1
+        version: 3.3.1
+      '@slipway/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@bitget-ai/bitget-agent-cli':
+        specifier: ^3.0.0
+        version: 3.0.0
+
   packages/core: {}
 
 packages:
@@ -80,6 +93,16 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@bitget-ai/bitget-agent-cli@3.0.0':
+    resolution: {integrity: sha512-iE14KWFRqwR9ZCHOK5gVKtVjzYCbjp8/8/ZytSw0dXPsImLOq8+fouPVh5Via3fI8PCWGiIiTAaenxcGHB/4Cg==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
+
+  '@bitget-ai/bitget-agent-sdk@3.3.1':
+    resolution: {integrity: sha512-NrIzr6HovbD68cSPMlyvDImZXkgamcg55uBVcB6IxjIvH7Y5alZ1q8/7dSg53Lndhvqdg+qZIyvCesxKrGv8pw==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -785,6 +808,12 @@ snapshots:
 
   '@biomejs/cli-win32-x64@2.5.15':
     optional: true
+
+  '@bitget-ai/bitget-agent-cli@3.0.0':
+    dependencies:
+      '@bitget-ai/bitget-agent-sdk': 3.3.1
+
+  '@bitget-ai/bitget-agent-sdk@3.3.1': {}
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true

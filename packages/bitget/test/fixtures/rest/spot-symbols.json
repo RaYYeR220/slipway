@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v2/spot/public/symbols?symbol=RNVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262945194,\"data\":[{\"symbol\":\"RNVDAUSDT\",\"baseCoin\":\"rNVDA\",\"quoteCoin\":\"USDT\",\"minTradeAmount\":\"0\",\"maxTradeAmount\":\"900000000000000000000\",\"takerFeeRate\":\"0.001\",\"makerFeeRate\":\"0.001\",\"pricePrecision\":\"2\",\"quantityPrecision\":\"4\",\"quotePrecision\":\"6\",\"status\":\"online\",\"minTradeUSDT\":\"10\",\"buyLimitPriceRatio\":\"0.1\",\"sellLimitPriceRatio\":\"0.1\",\"areaSymbol\":\"yes\",\"orderQuantity\":\"200\",\"openTime\":\"1776914552903\",\"offTime\":\"\",\"maxLimitOrderValue\":\"20000000\",\"maxMarketOrderValue\":\"1000000\"}]}"
+  },
+  "latencyMs": 282,
+  "recordedAt": 1791262945336
+}

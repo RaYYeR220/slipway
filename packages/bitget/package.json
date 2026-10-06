@@ -1,0 +1,30 @@
+{
+  "name": "@slipway/bitget",
+  "version": "0.1.0",
+  "description": "Bitget data adapters for Slipway: keyless public REST/WS, Reality session reference data, bitget-mcp and bitget-signal MCP clients with freshness-aware caching, and SDK-validated dry-run order tickets.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "record-fixtures": "tsx scripts/record-fixtures.ts"
+  },
+  "dependencies": {
+    "@bitget-ai/bitget-agent-sdk": "^3.3.1",
+    "@slipway/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@bitget-ai/bitget-agent-cli": "^3.0.0"
+  }
+}

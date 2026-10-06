@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/reality/market/states"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262948364,\"data\":{\"market\":\"US\",\"daylightType\":\"standard\",\"stateList\":[{\"state\":\"pre_market\",\"timeZone\":\"EST\",\"startTime\":\"04:00\",\"endTime\":\"09:30\"},{\"state\":\"regular\",\"timeZone\":\"EST\",\"startTime\":\"09:30\",\"endTime\":\"16:00\"},{\"state\":\"after_hours\",\"timeZone\":\"EST\",\"startTime\":\"16:00\",\"endTime\":\"20:00\"},{\"state\":\"overnight\",\"timeZone\":\"EST\",\"startTime\":\"20:00\",\"endTime\":\"04:00\"}]}}"
+  },
+  "latencyMs": 296,
+  "recordedAt": 1791262948513
+}

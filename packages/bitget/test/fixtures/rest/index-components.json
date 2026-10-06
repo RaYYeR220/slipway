@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/market/index-components?symbol=NVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262946649,\"data\":{\"symbol\":\"NVDAUSDT\",\"componentList\":[{\"exchange\":\"PYTH_PRO\",\"spotPair\":\"NVDA/USD\",\"equivalentPrice\":\"239.54\",\"weight\":\"0.3333\"},{\"exchange\":\"HYPERLIQUID\",\"spotPair\":\"NVDA/USD\",\"equivalentPrice\":\"239.54\",\"weight\":\"0.3333\"},{\"exchange\":\"BINANCE_INDEX\",\"spotPair\":\"NVDA/USDT\",\"equivalentPrice\":\"239.55\",\"weight\":\"0.3333\"}]}}"
+  },
+  "latencyMs": 306,
+  "recordedAt": 1791262946816
+}

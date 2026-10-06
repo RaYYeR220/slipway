@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/market/tickers?category=SPOT&symbol=RNVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262942455,\"data\":[{\"category\":\"SPOT\",\"symbol\":\"RNVDAUSDT\",\"ts\":\"1791262941465\",\"lastPrice\":\"239.48\",\"openPrice24h\":\"235.27\",\"highPrice24h\":\"240.32\",\"lowPrice24h\":\"236.01\",\"ask1Price\":\"239.48\",\"bid1Price\":\"239.46\",\"bid1Size\":\"145\",\"ask1Size\":\"69\",\"price24hPcnt\":\"0.01789\",\"volume24h\":\"91790430.6374\",\"turnover24h\":\"21900505300.4446\",\"platformTurnover24h\":\"1729836.5035\"}]}"
+  },
+  "latencyMs": 319,
+  "recordedAt": 1791262942612
+}

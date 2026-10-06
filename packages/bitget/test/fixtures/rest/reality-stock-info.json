@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/reality/market/stock-info?symbol=RNVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262946964,\"data\":[{\"symbol\":\"RNVDAUSDT\",\"code\":\"NVDA\",\"name\":null,\"tradingPeriod\":[\"overnight\",\"pre_market\",\"regular\",\"after_hours\"],\"weekendTradable\":\"yes\"}]}"
+  },
+  "latencyMs": 299,
+  "recordedAt": 1791262947115
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v2/mix/market/contracts?productType=USDT-FUTURES&symbol=NVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262945474,\"data\":[{\"symbol\":\"NVDAUSDT\",\"baseCoin\":\"NVDA\",\"quoteCoin\":\"USDT\",\"buyLimitPriceRatio\":\"0.02\",\"sellLimitPriceRatio\":\"0.02\",\"feeRateUpRatio\":\"0.005\",\"makerFeeRate\":\"0.0002\",\"takerFeeRate\":\"0.0006\",\"openCostUpRatio\":\"0.01\",\"supportMarginCoins\":[\"USDT\"],\"minTradeNum\":\"0.01\",\"priceEndStep\":\"1\",\"volumePlace\":\"2\",\"pricePlace\":\"2\",\"sizeMultiplier\":\"0.01\",\"symbolType\":\"perpetual\",\"minTradeUSDT\":\"5\",\"maxSymbolOrderNum\":\"200\",\"maxProductOrderNum\":\"1000\",\"maxPositionNum\":\"200\",\"symbolStatus\":\"normal\",\"offTime\":\"-1\",\"limitOpenTime\":\"-1\",\"deliveryTime\":\"\",\"deliveryStartTime\":\"\",\"deliveryPeriod\":\"\",\"launchTime\":\"\",\"fundInterval\":\"8\",\"minLever\":\"1\",\"maxLever\":\"100\",\"posLimit\":\"0.2\",\"maintainTime\":\"\",\"openTime\":\"1769994062273\",\"maxMarketOrderQty\":\"9500\",\"maxOrderQty\":\"52000\",\"isRwa\":\"YES\"}]}"
+  },
+  "latencyMs": 284,
+  "recordedAt": 1791262945621
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/market/tickers?category=USDT-FUTURES&symbol=NVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262942795,\"data\":[{\"category\":\"USDT-FUTURES\",\"symbol\":\"NVDAUSDT\",\"ts\":\"1791262942533\",\"lastPrice\":\"239.64\",\"openPrice24h\":\"235.45\",\"highPrice24h\":\"240.46\",\"lowPrice24h\":\"235.09\",\"ask1Price\":\"239.65\",\"bid1Price\":\"239.64\",\"bid1Size\":\"494.48\",\"ask1Size\":\"4.81\",\"price24hPcnt\":\"0.0178\",\"volume24h\":\"75159.18\",\"turnover24h\":\"17846559.0338\",\"indexPrice\":\"239.7833047392498016\",\"markPrice\":\"239.65\",\"fundingRate\":\"0\",\"openInterest\":\"52509.699999999923\",\"deliveryStartTime\":\"\",\"deliveryTime\":\"\",\"deliveryStatus\":\"\"}]}"
+  },
+  "latencyMs": 333,
+  "recordedAt": 1791262942946
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v3/market/current-fund-rate?symbol=NVDAUSDT"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262946061,\"data\":[{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingRateInterval\":\"8\",\"nextUpdate\":\"1791273600000\",\"minFundingRate\":\"-0.01\",\"maxFundingRate\":\"0.01\",\"cashDividend\":\"\",\"cashDividendNextUpdate\":\"null\"}]}"
+  },
+  "latencyMs": 297,
+  "recordedAt": 1791262946211
+}

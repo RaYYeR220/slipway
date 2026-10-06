@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://api.bitget.com/api/v2/mix/market/history-fund-rate?symbol=NVDAUSDT&productType=USDT-FUTURES&pageSize=30"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": "{\"code\":\"00000\",\"msg\":\"success\",\"requestTime\":1791262946359,\"data\":[{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.00007\",\"fundingTime\":\"1791244800000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000033\",\"fundingTime\":\"1791216000000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791187200000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791158400000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791129600000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791100800000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791072000000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791043200000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1791014400000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000174\",\"fundingTime\":\"1790985600000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000027\",\"fundingTime\":\"1790956800000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790928000000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000336\",\"fundingTime\":\"1790899200000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000293\",\"fundingTime\":\"1790870400000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790841600000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000235\",\"fundingTime\":\"1790812800000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.00016\",\"fundingTime\":\"1790784000000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790755200000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000326\",\"fundingTime\":\"1790726400000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000253\",\"fundingTime\":\"1790697600000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790668800000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000135\",\"fundingTime\":\"1790640000000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0.000288\",\"fundingTime\":\"1790611200000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790582400000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790553600000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790524800000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790496000000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790467200000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790438400000\"},{\"symbol\":\"NVDAUSDT\",\"fundingRate\":\"0\",\"fundingTime\":\"1790409600000\"}]}"
+  },
+  "latencyMs": 295,
+  "recordedAt": 1791262946508
+}

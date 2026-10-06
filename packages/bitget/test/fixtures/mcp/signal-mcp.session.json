@@ -1,0 +1,418 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "protocolVersion": "2025-06-18",
+          "capabilities": {},
+          "clientInfo": {
+            "name": "slipway-recorder",
+            "version": "0.1.0"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{\"experimental\":{},\"prompts\":{\"listChanged\":false},\"resources\":{\"subscribe\":false,\"listChanged\":false},\"tools\":{\"listChanged\":false}},\"serverInfo\":{\"name\":\"market-data-mcp\",\"version\":\"1.26.0\"}}}\r\n\r\n"
+    },
+    "latencyMs": 801,
+    "recordedAt": 1791262988866
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "method": "notifications/initialized"
+      }
+    },
+    "response": {
+      "status": 202,
+      "headers": {
+        "content-type": "application/json",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ""
+    },
+    "latencyMs": 561,
+    "recordedAt": 1791262989428
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/list",
+        "params": {}
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"crypto_market\",\"description\":\"CoinGecko crypto market data: search coins, get price/OHLCV, market cap rankings, trending coins, global market stats.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"search\",\"price\",\"ohlcv\",\"markets\",\"trending\",\"global\"],\"description\":\"Action to perform\"},\"query\":{\"type\":\"string\",\"description\":\"Search query (action=search)\"},\"coin_ids\":{\"type\":\"string\",\"description\":\"Comma-separated CoinGecko IDs for price, e.g. 'bitcoin,ethereum'\"},\"coin_id\":{\"type\":\"string\",\"description\":\"Single CoinGecko ID for ohlcv, e.g. 'bitcoin'\"},\"vs_currency\":{\"type\":\"string\",\"description\":\"Quote currency (default: usd)\"},\"days\":{\"type\":\"integer\",\"description\":\"Days of OHLCV history (1/7/30/90/180/365, default 180)\",\"minimum\":1,\"maximum\":365},\"per_page\":{\"type\":\"integer\",\"description\":\"Results per page for markets (default 20, max 250)\",\"minimum\":1,\"maximum\":250},\"page\":{\"type\":\"integer\",\"description\":\"Page number (default 1)\",\"minimum\":1}},\"required\":[\"action\"]}},{\"name\":\"defi_analytics\",\"description\":\"DeFiLlama DeFi data: TVL rankings, protocol details, chain stats, protocol fees/revenue, yield pools, stablecoin market caps.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"tvl_rank\",\"protocol\",\"chains\",\"fees\",\"yields\",\"stablecoins\"]},\"protocol\":{\"type\":\"string\",\"description\":\"Protocol slug (action=protocol)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max results (1-100)\",\"minimum\":1,\"maximum\":100},\"chain\":{\"type\":\"string\",\"description\":\"Filter by chain name\"},\"min_tvl\":{\"type\":\"number\",\"description\":\"Min TVL filter for yields (default 1000000)\"}},\"required\":[\"action\"]}},{\"name\":\"dex_market\",\"description\":\"DexScreener DEX data: search pairs/tokens, get specific pair info, token details by address, trending token boosts.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"search\",\"pair\",\"token\",\"trending\"]},\"query\":{\"type\":\"string\",\"description\":\"Search query (action=search)\"},\"chain\":{\"type\":\"string\",\"description\":\"Blockchain ID, e.g. ethereum, solana, bsc\"},\"pair_address\":{\"type\":\"string\",\"description\":\"Pair contract address (action=pair)\"},\"token_address\":{\"type\":\"string\",\"description\":\"Token address, optionally prefixed with 'chain/' (action=token)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max results (1-30, default 10)\",\"minimum\":1,\"maximum\":30}},\"required\":[\"action\"]}},{\"name\":\"sentiment_index\",\"description\":\"Crypto Fear & Greed Index: current value, historical data, and real-time granular readings.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"current\",\"history\",\"realtime\"],\"description\":\"current=latest index, history=past N days, realtime=5min intervals\"},\"days\":{\"type\":\"integer\",\"description\":\"Days of history (1-365, default 30)\",\"minimum\":1,\"maximum\":365},\"hours\":{\"type\":\"integer\",\"description\":\"Hours of realtime data (1-192, default 24)\",\"minimum\":1,\"maximum\":192}},\"required\":[\"action\"]}},{\"name\":\"tradfi_news\",\"description\":\"Finnhub financial data: earnings calendar, general/crypto news, company profiles. Requires FINNHUB_API_KEY.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"earnings\",\"news\",\"crypto_news\",\"company\"]},\"symbol\":{\"type\":\"string\",\"description\":\"Stock symbol for company/earnings filter\"},\"from_date\":{\"type\":\"string\",\"description\":\"Start date YYYY-MM-DD (earnings)\"},\"to_date\":{\"type\":\"string\",\"description\":\"End date YYYY-MM-DD (earnings)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max results (1-50, default 20)\",\"minimum\":1,\"maximum\":50}},\"required\":[\"action\"]}},{\"name\":\"crypto_price\",\"description\":\"FreeCrypto: crypto price data and symbol list (100K req/month free).\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"price\",\"symbols\"],\"description\":\"price=get price for symbols, symbols=list all available\"},\"symbol\":{\"type\":\"string\",\"description\":\"Comma-separated base symbols, e.g. 'BTC,ETH,SOL' (max 10)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max symbols returned for action=symbols (1-200, default 50)\",\"minimum\":1,\"maximum\":200}},\"required\":[\"action\"]}},{\"name\":\"social_trending\",\"description\":\"Social media trending lists: Douyin, Weibo, Bilibili, Zhihu, Baidu, GitHub, Toutiao, 36Kr, CSDN, and more. Three-provider failover.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"trending\",\"platforms\"],\"description\":\"trending=get hotlist for platform, platforms=list supported platforms\"},\"platform\":{\"type\":\"string\",\"description\":\"Platform key. One of: douyin, weibo, bilibili, zhihu, baidu, github, toutiao, hupu, netease, sspai, juejin, csdn, 36kr, ithome, lol, kr36, weread, xueqiu, lushi\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max items (1-50, default 30)\",\"minimum\":1,\"maximum\":50}},\"required\":[\"action\"]}},{\"name\":\"network_status\",\"description\":\"On-chain public data (no API key): ETH gas prices, BTC recommended fees, mempool stats, and recent blocks.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"eth_gas\",\"btc_fees\",\"btc_mempool\",\"btc_blocks\"],\"description\":\"eth_gas=Ethereum gas prices, btc_fees=recommended BTC fees, btc_mempool=mempool stats, btc_blocks=recent blocks\"}},\"required\":[\"action\"]}},{\"name\":\"derivatives_sentiment\",\"description\":\"Social sentiment data: Reddit crypto trending (ApeWisdom), Binance futures long/short ratios, open interest history, taker buy/sell ratio.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"reddit_trending\",\"long_short\",\"top_ls\",\"top_position\",\"open_interest\",\"taker_ratio\"]},\"filter\":{\"type\":\"string\",\"description\":\"Subreddit filter for reddit_trending (default: all-crypto)\"},\"symbol\":{\"type\":\"string\",\"description\":\"Futures symbol for Binance endpoints (default: BTCUSDT)\"},\"period\":{\"type\":\"string\",\"enum\":[\"5m\",\"15m\",\"30m\",\"1h\",\"2h\",\"4h\",\"6h\",\"12h\",\"1d\"],\"description\":\"Period for Binance endpoints (default: 4h)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max results (1-50, default 20)\",\"minimum\":1,\"maximum\":50}},\"required\":[\"action\"]}},{\"name\":\"global_data\",\"description\":\"World data: forex exchange rates (150+ currencies), weather forecast, Wikipedia article summaries, arXiv paper search.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"forex\",\"weather\",\"wikipedia\",\"arxiv\"]},\"base\":{\"type\":\"string\",\"description\":\"Base currency for forex (default: USD)\"},\"symbols\":{\"type\":\"string\",\"description\":\"Comma-separated target currencies\"},\"latitude\":{\"type\":\"number\",\"description\":\"Latitude for weather\"},\"longitude\":{\"type\":\"number\",\"description\":\"Longitude for weather\"},\"query\":{\"type\":\"string\",\"description\":\"Search query for wikipedia/arxiv\"},\"lang\":{\"type\":\"string\",\"enum\":[\"en\",\"zh\",\"ja\",\"ko\",\"es\",\"fr\",\"de\",\"ru\"],\"description\":\"Wikipedia language (default: en)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max results (1-20, default 5)\",\"minimum\":1,\"maximum\":20}},\"required\":[\"action\"]}},{\"name\":\"news_feed\",\"description\":\"Aggregate news from 44 RSS/Atom feeds: crypto, macro, tech, geopolitics, science. Filter by keyword. No API key required.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"latest\",\"sources\"],\"description\":\"latest=fetch articles, sources=list available feed keys\"},\"feeds\":{\"type\":\"string\",\"description\":\"Comma-separated feed keys, or 'all' (default). See action=sources.\"},\"keyword\":{\"type\":\"string\",\"description\":\"Case-insensitive keyword filter on title+summary\"},\"limit\":{\"type\":\"integer\",\"description\":\"Max articles per feed (1-10, default 5)\",\"minimum\":1,\"maximum\":10}},\"required\":[\"action\"]}},{\"name\":\"cn_market\",\"description\":\"A-share and HK stock data via AKShare: OHLCV history, current price, symbol search, index daily data.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"ohlcv\",\"price\",\"search\",\"index\"]},\"symbol\":{\"type\":\"string\",\"description\":\"A-share code (000001), HK code (00700), index (sh000001)\"},\"market\":{\"type\":\"string\",\"enum\":[\"a\",\"hk\"],\"description\":\"Market: a=A-share (default), hk=Hong Kong\"},\"period\":{\"type\":\"string\",\"enum\":[\"daily\",\"weekly\",\"monthly\",\"1\",\"5\",\"15\",\"30\",\"60\"],\"description\":\"Period (default: daily)\"},\"days\":{\"type\":\"integer\",\"description\":\"Calendar days of history (default 365)\",\"minimum\":1},\"adjust\":{\"type\":\"string\",\"enum\":[\"\",\"qfq\",\"hfq\"],\"description\":\"Price adjustment: empty=none, qfq=forward, hfq=backward\"}},\"required\":[\"action\"]}},{\"name\":\"global_assets\",\"description\":\"Yahoo Finance data: OHLCV history and current price for stocks, ETFs, crypto (BTC-USD), forex (EURUSD=X), futures (GC=F). No API key.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"ohlcv\",\"price\"]},\"symbol\":{\"type\":\"string\",\"description\":\"Yahoo Finance symbol: BTC-USD, AAPL, EURUSD=X, GC=F, SPY\"},\"period\":{\"type\":\"string\",\"enum\":[\"1mo\",\"3mo\",\"6mo\",\"1y\",\"2y\",\"5y\",\"max\"],\"description\":\"History period (default: 1y)\"},\"interval\":{\"type\":\"string\",\"enum\":[\"1h\",\"1d\",\"1wk\",\"1mo\"],\"description\":\"Bar interval (default: 1d)\"}},\"required\":[\"action\",\"symbol\"]}},{\"name\":\"crypto_derivatives\",\"description\":\"Crypto market data via ccxt exchange. Covers: price, klines (OHLCV), 24h ticker, multi-symbol price.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"description\":\"Action to perform: price, klines, ticker_24h, multi_price.\"},\"symbol\":{\"type\":\"string\",\"description\":\"Trading pair, e.g. BTC/USDT\"},\"symbols\":{\"type\":\"string\",\"description\":\"Comma-separated symbols for multi_price\"},\"exchange\":{\"type\":\"string\",\"description\":\"Exchange name (default: Binance)\"},\"timeframe\":{\"type\":\"string\",\"description\":\"Kline timeframe, e.g. 1h, 4h, 1d (default: 4h)\"},\"limit\":{\"type\":\"integer\",\"description\":\"Number of results (1-500, default 50)\",\"minimum\":1,\"maximum\":500}},\"required\":[\"action\"]}},{\"name\":\"technical_analysis\",\"description\":\"Technical analysis on crypto pairs: RSI, MACD, Bollinger Bands, MA/EMA, ATR, support/resistance levels, full composite analysis, and batch analysis for multiple symbols.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"rsi\",\"macd\",\"bollinger\",\"ma\",\"ema\",\"atr\",\"support_resistance\",\"full_analysis\",\"batch_analysis\"]},\"symbol\":{\"type\":\"string\",\"description\":\"Trading pair, e.g. BTC/USDT (required for single-coin actions)\"},\"symbols\":{\"type\":\"string\",\"description\":\"Comma-separated pairs for batch_analysis\"},\"timeframe\":{\"type\":\"string\",\"description\":\"Candle timeframe: 1h, 4h, 1d, etc. (default: 4h)\"},\"period\":{\"type\":\"integer\",\"description\":\"Indicator lookback period (2-500, default: 14)\",\"minimum\":2,\"maximum\":500}},\"required\":[\"action\"]}},{\"name\":\"backtest\",\"description\":\"Run historical backtests on trading strategies using VectorBT. Fetches OHLCV from exchange (ccxt), computes indicators (RSI/MACD/BB/EMA/ATR), evaluates entry/exit signals, simulates portfolio, returns structured metrics (return%, Sharpe, max drawdown, win rate, profit factor). Optionally generates equity curve chart. Supports pre-fetched OHLCV via ohlcv_json for coingecko/yfinance data.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"run\",\"chart\"],\"description\":\"run=execute backtest, chart=regenerate chart from previous metrics\"},\"strategy_config\":{\"type\":\"string\",\"description\":\"JSON string with strategy config. Keys: name, symbols (list), timeframe, indicators (list of {name, params, key}), entry_conditions (list of {indicator, field, operator, value}), exit_conditions, direction (long/short/both), stop_loss_pct, take_profit_pct, trade_size_pct, fees.\"},\"period\":{\"type\":\"string\",\"description\":\"Lookback period, e.g. '6m', '1y', '30d'. Default: 6m\"},\"exchange\":{\"type\":\"string\",\"enum\":[\"binance\",\"bitget\",\"okx\",\"bybit\",\"coinbase\",\"kraken\",\"kucoin\"],\"description\":\"Exchange for OHLCV data. Default: binance\"},\"starting_balance\":{\"type\":\"number\",\"description\":\"Initial cash. Default: 100000\"},\"ohlcv_json\":{\"type\":\"string\",\"description\":\"Pre-fetched OHLCV as JSON string (from coingecko/yfinance tools). Format: {\\\"SYMBOL\\\": [{\\\"timestamp\\\":ms,\\\"open\\\":...,\\\"close\\\":...}, ...]}\"},\"metrics_json\":{\"type\":\"string\",\"description\":\"For action=chart: JSON metrics from a previous run.\"},\"generate_chart\":{\"type\":\"boolean\",\"description\":\"Generate equity curve chart (requires playwright). Default: false\"}},\"required\":[\"action\"]}},{\"name\":\"macro_indicators\",\"description\":\"Macro economic calendar and indicators: CPI, Non-Farm Payrolls, FOMC decisions, GDP growth, unemployment, retail sales, PPI, ISM PMI, and more. Data from FRED (Federal Reserve). Set FRED_API_KEY for higher rate limits.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"latest_release\",\"history\",\"fomc_news\",\"multi_indicator\",\"series_list\"],\"description\":\"latest_release=most recent value for an indicator, history=historical series data, fomc_news=recent Fed monetary policy news from RSS, multi_indicator=key macro snapshot (CPI+NFP+GDP+unemployment), series_list=list available indicator keys\"},\"indicator\":{\"type\":\"string\",\"description\":\"Indicator key, e.g. 'cpi', 'nonfarm_payrolls', 'gdp_growth', 'unemployment', 'core_pce', 'ppi', 'consumer_sentiment', 'retail_sales', 'industrial_production'. See action=series_list for full list.\"},\"limit\":{\"type\":\"integer\",\"description\":\"Number of historical observations (default 12, max 120)\",\"minimum\":1,\"maximum\":120},\"indicators\":{\"type\":\"string\",\"description\":\"Comma-separated indicator keys for multi_indicator action\"}},\"required\":[\"action\"]}},{\"name\":\"rates_yields\",\"description\":\"US interest rates and bond yields: Treasury yield curve (3M/1Y/2Y/5Y/10Y/30Y), Federal funds rate and target bands, SOFR, mortgage rates, credit spreads, 10Y-2Y spread (recession indicator), breakeven inflation. Data from FRED (Federal Reserve). Set FRED_API_KEY for higher rate limits.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"yield_curve\",\"fed_funds\",\"rate\",\"history\",\"rates_snapshot\",\"series_list\"],\"description\":\"yield_curve=full Treasury yield curve snapshot, fed_funds=current Fed funds rate + target bands, rate=specific rate by key, history=historical series, rates_snapshot=key rates dashboard (yield curve + Fed + spreads), series_list=list available rate keys\"},\"rate_key\":{\"type\":\"string\",\"description\":\"Rate key for rate/history actions: t2y, t10y, t30y, t3m, fed_funds, fed_funds_target_upper, spread_10y2y, breakeven_10y, sofr, prime_rate, mortgage_30y, hy_spread, ig_spread, tips_10y. See action=series_list.\"},\"limit\":{\"type\":\"integer\",\"description\":\"Number of observations for history (default 30, max 252)\",\"minimum\":1,\"maximum\":252}},\"required\":[\"action\"]}},{\"name\":\"cross_asset\",\"description\":\"Rolling cross-asset correlation: BTC vs Gold, DXY, Nasdaq, S&P500, 10Y Treasury yield, EUR/USD, oil, VIX, and any other Yahoo Finance symbol. Returns Pearson correlation (full period + rolling window) with trend and interpretation. No API key required.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"correlation\",\"assets_list\",\"heatmap\"],\"description\":\"correlation=compute correlation between base and targets, assets_list=list available asset keys and Yahoo symbols, heatmap=full correlation matrix for a set of assets\"},\"base\":{\"type\":\"string\",\"description\":\"Base asset key or Yahoo Finance symbol (default: btc → BTC-USD)\"},\"targets\":{\"type\":\"string\",\"description\":\"Comma-separated target asset keys or Yahoo symbols. Default: gold,dxy,ndx,spx,t10y,vix. Use assets_list action to see available keys.\"},\"period\":{\"type\":\"string\",\"enum\":[\"30d\",\"90d\",\"180d\",\"1y\",\"2y\",\"5y\"],\"description\":\"Lookback period (default: 1y)\"},\"window\":{\"type\":\"integer\",\"description\":\"Rolling window in trading days (default: 30, range: 5-252)\",\"minimum\":5,\"maximum\":252},\"assets\":{\"type\":\"string\",\"description\":\"Comma-separated assets for heatmap (default: btc,gold,dxy,ndx,spx,t10y,oil)\"}},\"required\":[\"action\"]}}]}}\r\n\r\n"
+    },
+    "latencyMs": 377,
+    "recordedAt": 1791262989805
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "tools/call",
+        "params": {
+          "name": "crypto_derivatives",
+          "arguments": {
+            "action": "price",
+            "symbol": "NVDA/USDT:USDT",
+            "exchange": "bitget"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"symbol\\\": \\\"NVDA/USDT:USDT\\\", \\\"price\\\": 239.66, \\\"bid\\\": null, \\\"ask\\\": null, \\\"timestamp\\\": 1791262981530}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 422,
+    "recordedAt": 1791262990227
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "tools/call",
+        "params": {
+          "name": "crypto_derivatives",
+          "arguments": {
+            "action": "ticker_24h",
+            "symbol": "NVDA/USDT:USDT",
+            "exchange": "bitget"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"symbol\\\": \\\"NVDA/USDT:USDT\\\", \\\"last\\\": 239.66, \\\"high\\\": 240.49, \\\"low\\\": 235.07, \\\"volume\\\": 793981.44, \\\"quote_volume\\\": 188880960.8279, \\\"change_pct\\\": 1.775, \\\"timestamp\\\": 1791262981530}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 347,
+    "recordedAt": 1791262990574
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "method": "tools/call",
+        "params": {
+          "name": "crypto_derivatives",
+          "arguments": {
+            "action": "klines",
+            "symbol": "NVDA/USDT:USDT",
+            "exchange": "bitget",
+            "timeframe": "1h",
+            "limit": 60
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":5,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"[{\\\"timestamp\\\": 1791050400000, \\\"open\\\": 234.8, \\\"high\\\": 234.86, \\\"low\\\": 234.7, \\\"close\\\": 234.72, \\\"volume\\\": 1433.22}, {\\\"timestamp\\\": 1791054000000, \\\"open\\\": 234.71, \\\"high\\\": 234.84, \\\"low\\\": 234.56, \\\"close\\\": 234.72, \\\"volume\\\": 2328.17}, {\\\"timestamp\\\": 1791057600000, \\\"open\\\": 234.72, \\\"high\\\": 235.17, \\\"low\\\": 234.71, \\\"close\\\": 235.14, \\\"volume\\\": 5216.44}, {\\\"timestamp\\\": 1791061200000, \\\"open\\\": 235.13, \\\"high\\\": 235.25, \\\"low\\\": 235.01, \\\"close\\\": 235.12, \\\"volume\\\": 1748.78}, {\\\"timestamp\\\": 1791064800000, \\\"open\\\": 235.12, \\\"high\\\": 235.28, \\\"low\\\": 235.12, \\\"close\\\": 235.27, \\\"volume\\\": 832.14}, {\\\"timestamp\\\": 1791068400000, \\\"open\\\": 235.27, \\\"high\\\": 235.3, \\\"low\\\": 235.03, \\\"close\\\": 235.1, \\\"volume\\\": 1524.05}, {\\\"timestamp\\\": 1791072000000, \\\"open\\\": 235.11, \\\"high\\\": 235.2, \\\"low\\\": 235.0, \\\"close\\\": 235.13, \\\"volume\\\": 1908.45}, {\\\"timestamp\\\": 1791075600000, \\\"open\\\": 235.13, \\\"high\\\": 235.14, \\\"low\\\": 235.0, \\\"close\\\": 235.01, \\\"volume\\\": 895.34}, {\\\"timestamp\\\": 1791079200000, \\\"open\\\": 235.01, \\\"high\\\": 235.08, \\\"low\\\": 234.67, \\\"close\\\": 234.68, \\\"volume\\\": 6106.54}, {\\\"timestamp\\\": 1791082800000, \\\"open\\\": 234.67, \\\"high\\\": 234.8, \\\"low\\\": 234.65, \\\"close\\\": 234.68, \\\"volume\\\": 1780.99}, {\\\"timestamp\\\": 1791086400000, \\\"open\\\": 234.68, \\\"high\\\": 234.73, \\\"low\\\": 234.38, \\\"close\\\": 234.52, \\\"volume\\\": 2574.24}, {\\\"timestamp\\\": 1791090000000, \\\"open\\\": 234.53, \\\"high\\\": 234.83, \\\"low\\\": 234.52, \\\"close\\\": 234.76, \\\"volume\\\": 1421.43}, {\\\"timestamp\\\": 1791093600000, \\\"open\\\": 234.76, \\\"high\\\": 234.92, \\\"low\\\": 234.71, \\\"close\\\": 234.92, \\\"volume\\\": 2625.35}, {\\\"timestamp\\\": 1791097200000, \\\"open\\\": 234.91, \\\"high\\\": 234.92, \\\"low\\\": 234.75, \\\"close\\\": 234.83, \\\"volume\\\": 1185.65}, {\\\"timestamp\\\": 1791100800000, \\\"open\\\": 234.83, \\\"high\\\": 234.83, \\\"low\\\": 234.71, \\\"close\\\": 234.75, \\\"volume\\\": 3012.11}, {\\\"timestamp\\\": 1791104400000, \\\"open\\\": 234.76, \\\"high\\\": 234.85, \\\"low\\\": 234.74, \\\"close\\\": 234.84, \\\"volume\\\": 1101.07}, {\\\"timestamp\\\": 1791108000000, \\\"open\\\": 234.84, \\\"high\\\": 234.96, \\\"low\\\": 234.84, \\\"close\\\": 234.89, \\\"volume\\\": 2357.05}, {\\\"timestamp\\\": 1791111600000, \\\"open\\\": 234.88, \\\"high\\\": 234.89, \\\"low\\\": 234.81, \\\"close\\\": 234.82, \\\"volume\\\": 1644.67}, {\\\"timestamp\\\": 1791115200000, \\\"open\\\": 234.83, \\\"high\\\": 234.9, \\\"low\\\": 234.74, \\\"close\\\": 234.74, \\\"volume\\\": 1569.9}, {\\\"timestamp\\\": 1791118800000, \\\"open\\\": 234.74, \\\"high\\\": 234.86, \\\"low\\\": 234.71, \\\"close\\\": 234.85, \\\"volume\\\": 1110.77}, {\\\"timestamp\\\": 1791122400000, \\\"open\\\": 234.85, \\\"high\\\": 235.0, \\\"low\\\": 234.85, \\\"close\\\": 234.97, \\\"volume\\\": 1944.13}, {\\\"timestamp\\\": 1791126000000, \\\"open\\\": 234.96, \\\"high\\\": 235.07, \\\"low\\\": 234.96, \\\"close\\\": 235.02, \\\"volume\\\": 1667.76}, {\\\"timestamp\\\": 1791129600000, \\\"open\\\": 235.02, \\\"high\\\": 235.06, \\\"low\\\": 234.99, \\\"close\\\": 235.03, \\\"volume\\\": 1170.89}, {\\\"timestamp\\\": 1791133200000, \\\"open\\\": 235.02, \\\"high\\\": 235.06, \\\"low\\\": 235.02, \\\"close\\\": 235.05, \\\"volume\\\": 709.82}, {\\\"timestamp\\\": 1791136800000, \\\"open\\\": 235.05, \\\"high\\\": 235.13, \\\"low\\\": 235.0, \\\"close\\\": 235.08, \\\"volume\\\": 1810.77}, {\\\"timestamp\\\": 1791140400000, \\\"open\\\": 235.07, \\\"high\\\": 235.11, \\\"low\\\": 235.03, \\\"close\\\": 235.07, \\\"volume\\\": 735.37}, {\\\"timestamp\\\": 1791144000000, \\\"open\\\": 235.06, \\\"high\\\": 235.16, \\\"low\\\": 235.04, \\\"close\\\": 235.16, \\\"volume\\\": 906.33}, {\\\"timestamp\\\": 1791147600000, \\\"open\\\": 235.15, \\\"high\\\": 235.24, \\\"low\\\": 234.97, \\\"close\\\": 235.07, \\\"volume\\\": 3125.39}, {\\\"timestamp\\\": 1791151200000, \\\"open\\\": 235.08, \\\"high\\\": 235.68, \\\"low\\\": 235.01, \\\"close\\\": 235.65, \\\"volume\\\": 7399.43}, {\\\"timestamp\\\": 1791154800000, \\\"open\\\": 235.65, \\\"high\\\": 235.66, \\\"low\\\": 235.29, \\\"close\\\": 235.39, \\\"volume\\\": 7146.97}, {\\\"timestamp\\\": 1791158400000, \\\"open\\\": 235.39, \\\"high\\\": 236.04, \\\"low\\\": 234.99, \\\"close\\\": 235.84, \\\"volume\\\": 17643.15}, {\\\"timestamp\\\": 1791162000000, \\\"open\\\": 235.85, \\\"high\\\": 236.61, \\\"low\\\": 235.8, \\\"close\\\": 236.12, \\\"volume\\\": 7756.17}, {\\\"timestamp\\\": 1791165600000, \\\"open\\\": 236.12, \\\"high\\\": 236.32, \\\"low\\\": 235.57, \\\"close\\\": 235.6, \\\"volume\\\": 5347.96}, {\\\"timestamp\\\": 1791169200000, \\\"open\\\": 235.58, \\\"high\\\": 235.88, \\\"low\\\": 235.45, \\\"close\\\": 235.54, \\\"volume\\\": 7661.07}, {\\\"timestamp\\\": 1791172800000, \\\"open\\\": 235.54, \\\"high\\\": 235.72, \\\"low\\\": 235.28, \\\"close\\\": 235.5, \\\"volume\\\": 6263.15}, {\\\"timestamp\\\": 1791176400000, \\\"open\\\": 235.49, \\\"high\\\": 235.7, \\\"low\\\": 235.19, \\\"close\\\": 235.36, \\\"volume\\\": 5525.24}, {\\\"timestamp\\\": 1791180000000, \\\"open\\\": 235.36, \\\"high\\\": 235.71, \\\"low\\\": 235.31, \\\"close\\\": 235.71, \\\"volume\\\": 6811.76}, {\\\"timestamp\\\": 1791183600000, \\\"open\\\": 235.71, \\\"high\\\": 235.79, \\\"low\\\": 235.49, \\\"close\\\": 235.65, \\\"volume\\\": 11629.07}, {\\\"timestamp\\\": 1791187200000, \\\"open\\\": 235.65, \\\"high\\\": 236.29, \\\"low\\\": 235.29, \\\"close\\\": 235.76, \\\"volume\\\": 29539.97}, {\\\"timestamp\\\": 1791190800000, \\\"open\\\": 235.77, \\\"high\\\": 235.86, \\\"low\\\": 235.11, \\\"close\\\": 235.44, \\\"volume\\\": 18654.96}, {\\\"timestamp\\\": 1791194400000, \\\"open\\\": 235.44, \\\"high\\\": 235.84, \\\"low\\\": 235.17, \\\"close\\\": 235.72, \\\"volume\\\": 13604.22}, {\\\"timestamp\\\": 1791198000000, \\\"open\\\": 235.72, \\\"high\\\": 235.72, \\\"low\\\": 235.07, \\\"close\\\": 235.26, \\\"volume\\\": 17826.14}, {\\\"timestamp\\\": 1791201600000, \\\"open\\\": 235.26, \\\"high\\\": 235.71, \\\"low\\\": 235.09, \\\"close\\\": 235.57, \\\"volume\\\": 21551.05}, {\\\"timestamp\\\": 1791205200000, \\\"open\\\": 235.58, \\\"high\\\": 237.99, \\\"low\\\": 235.42, \\\"close\\\": 237.44, \\\"volume\\\": 123848.62}, {\\\"timestamp\\\": 1791208800000, \\\"open\\\": 237.43, \\\"high\\\": 237.54, \\\"low\\\": 236.72, \\\"close\\\": 237.5, \\\"volume\\\": 64048.84}, {\\\"timestamp\\\": 1791212400000, \\\"open\\\": 237.49, \\\"high\\\": 237.6, \\\"low\\\": 236.47, \\\"close\\\": 237.02, \\\"volume\\\": 28703.51}, {\\\"timestamp\\\": 1791216000000, \\\"open\\\": 237.02, \\\"high\\\": 237.13, \\\"low\\\": 236.27, \\\"close\\\": 237.02, \\\"volume\\\": 33600.46}, {\\\"timestamp\\\": 1791219600000, \\\"open\\\": 237.02, \\\"high\\\": 238.15, \\\"low\\\": 237.02, \\\"close\\\": 237.83, \\\"volume\\\": 38790.79}, {\\\"timestamp\\\": 1791223200000, \\\"open\\\": 237.83, \\\"high\\\": 239.83, \\\"low\\\": 237.71, \\\"close\\\": 239.63, \\\"volume\\\": 206589.0}, {\\\"timestamp\\\": 1791226800000, \\\"open\\\": 239.64, \\\"high\\\": 240.29, \\\"low\\\": 238.78, \\\"close\\\": 239.29, \\\"volume\\\": 65214.72}, {\\\"timestamp\\\": 1791230400000, \\\"open\\\": 239.29, \\\"high\\\": 239.8, \\\"low\\\": 238.94, \\\"close\\\": 239.73, \\\"volume\\\": 19111.9}, {\\\"timestamp\\\": 1791234000000, \\\"open\\\": 239.73, \\\"high\\\": 239.95, \\\"low\\\": 239.31, \\\"close\\\": 239.73, \\\"volume\\\": 14157.16}, {\\\"timestamp\\\": 1791237600000, \\\"open\\\": 239.72, \\\"high\\\": 239.85, \\\"low\\\": 239.59, \\\"close\\\": 239.69, \\\"volume\\\": 7129.51}, {\\\"timestamp\\\": 1791241200000, \\\"open\\\": 239.69, \\\"high\\\": 240.42, \\\"low\\\": 239.66, \\\"close\\\": 240.34, \\\"volume\\\": 11241.73}, {\\\"timestamp\\\": 1791244800000, \\\"open\\\": 240.33, \\\"high\\\": 240.49, \\\"low\\\": 240.17, \\\"close\\\": 240.37, \\\"volume\\\": 12818.27}, {\\\"timestamp\\\": 1791248400000, \\\"open\\\": 240.36, \\\"high\\\": 240.45, \\\"low\\\": 239.65, \\\"close\\\": 239.65, \\\"volume\\\": 10108.94}, {\\\"timestamp\\\": 1791252000000, \\\"open\\\": 239.65, \\\"high\\\": 239.78, \\\"low\\\": 239.38, \\\"close\\\": 239.65, \\\"volume\\\": 14543.24}, {\\\"timestamp\\\": 1791255600000, \\\"open\\\": 239.66, \\\"high\\\": 240.02, \\\"low\\\": 239.62, \\\"close\\\": 239.84, \\\"volume\\\": 9791.68}, {\\\"timestamp\\\": 1791259200000, \\\"open\\\": 239.84, \\\"high\\\": 240.07, \\\"low\\\": 239.64, \\\"close\\\": 239.7, \\\"volume\\\": 8779.86}, {\\\"timestamp\\\": 1791262800000, \\\"open\\\": 239.69, \\\"high\\\": 239.71, \\\"low\\\": 239.66, \\\"close\\\": 239.66, \\\"volume\\\": 553.03}]\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 347,
+    "recordedAt": 1791262990921
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "method": "tools/call",
+        "params": {
+          "name": "technical_analysis",
+          "arguments": {
+            "action": "bollinger",
+            "symbol": "NVDA/USDT:USDT",
+            "timeframe": "1h",
+            "period": 20
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":6,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"symbol\\\": \\\"NVDA/USDT:USDT\\\", \\\"timeframe\\\": \\\"1h\\\", \\\"upper\\\": 235.1542, \\\"middle\\\": 238.532, \\\"lower\\\": 241.9098, \\\"bandwidth\\\": -0.0283, \\\"pct_b\\\": 0.333, \\\"position\\\": \\\"above_upper\\\"}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 356,
+    "recordedAt": 1791262991277
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "method": "tools/call",
+        "params": {
+          "name": "technical_analysis",
+          "arguments": {
+            "action": "rsi",
+            "symbol": "NVDA/USDT:USDT",
+            "timeframe": "1h",
+            "period": 14
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":7,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"symbol\\\": \\\"NVDA/USDT:USDT\\\", \\\"timeframe\\\": \\\"1h\\\", \\\"rsi\\\": 67.37, \\\"period\\\": 14, \\\"signal\\\": \\\"neutral\\\"}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 421,
+    "recordedAt": 1791262991698
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "method": "tools/call",
+        "params": {
+          "name": "technical_analysis",
+          "arguments": {
+            "action": "atr",
+            "symbol": "NVDA/USDT:USDT",
+            "timeframe": "1h",
+            "period": 14
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":8,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"symbol\\\": \\\"NVDA/USDT:USDT\\\", \\\"timeframe\\\": \\\"1h\\\", \\\"atr\\\": 0.6569, \\\"atr_pct\\\": 0.27, \\\"suggested_stop\\\": 238.6747, \\\"period\\\": 14}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 386,
+    "recordedAt": 1791262992084
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "method": "tools/call",
+        "params": {
+          "name": "tradfi_news",
+          "arguments": {
+            "action": "earnings",
+            "symbol": "NVDA",
+            "limit": 10
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ": ping - 2026-10-06 05:03:27.331741+00:00\r\n\r\nevent: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":11,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\": \\\"\\\"}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 15399,
+    "recordedAt": 1791263007484
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "method": "tools/call",
+        "params": {
+          "name": "macro_indicators",
+          "arguments": {
+            "action": "multi_indicator"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ": ping - 2026-10-06 05:03:27.227720+00:00\r\n\r\nevent: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":9,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"cpi\\\": {\\\"error\\\": \\\"\\\"}, \\\"nonfarm_payrolls\\\": {\\\"error\\\": \\\"\\\"}, \\\"gdp_growth\\\": {\\\"error\\\": \\\"\\\"}, \\\"unemployment\\\": {\\\"error\\\": \\\"\\\"}}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 20318,
+    "recordedAt": 1791263012403
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "method": "tools/call",
+        "params": {
+          "name": "macro_indicators",
+          "arguments": {
+            "action": "fomc_news"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ": ping - 2026-10-06 05:03:27.227764+00:00\r\n\r\nevent: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":10,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"error\\\": \\\"Failed to fetch Fed RSS: \\\"}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 20325,
+    "recordedAt": 1791263012409
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "method": "tools/call",
+        "params": {
+          "name": "rates_yields",
+          "arguments": {
+            "action": "fed_funds"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ": ping - 2026-10-06 05:03:27.309593+00:00\r\n\r\nevent: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":13,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"effective_fed_funds\\\": null, \\\"target_upper\\\": null, \\\"target_lower\\\": null, \\\"note\\\": \\\"FOMC sets the target range; effective rate trades within it\\\"}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 20384,
+    "recordedAt": 1791263012470
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "tools/call",
+        "params": {
+          "name": "news_feed",
+          "arguments": {
+            "action": "latest",
+            "keyword": "NVDA",
+            "limit": 2
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ": ping - 2026-10-06 05:03:27.332890+00:00\r\n\r\nevent: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":12,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"[{\\\"feed\\\": \\\"cointelegraph\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"decrypt\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"bitcoinist\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"blockworks\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"the_defiant\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"watcherguru\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"coindesk\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"cryptonews_com\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"u_today\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"cryptobriefing\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"cryptonews\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"bitcoin_com\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"newsbtc\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"ambcrypto\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"protos\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"zycrypto\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"coinjournal\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"cnbc\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"fed\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"coincenter\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"rekt\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"hayes\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"vitalik\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"cobie\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"messari\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"hackernews\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"techcrunch\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"theverge\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"wired\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"arstechnica\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"bbc_world\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"npr\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"guardian\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"aljazeera\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"nhk\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"nature\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"producthunt\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"reddit_tech\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"reddit_worldnews\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"reddit_science\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"reddit_economics\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"reddit_ml\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"blockbeats\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}, {\\\"feed\\\": \\\"coinpost\\\", \\\"error\\\": \\\"\\\", \\\"items\\\": []}]\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 20828,
+    "recordedAt": 1791263012913
+  },
+  {
+    "request": {
+      "method": "POST",
+      "url": "https://datahub.noxiaohao.com/mcp",
+      "body": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "method": "tools/call",
+        "params": {
+          "name": "sentiment_index",
+          "arguments": {
+            "action": "current"
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "content-type": "text/event-stream",
+        "mcp-session-id": "2e3059ee2552414fa0e7faf3037c2415"
+      },
+      "body": ": ping - 2026-10-06 05:03:27.332871+00:00\r\n\r\n: ping - 2026-10-06 05:03:42.333974+00:00\r\n\r\nevent: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":14,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"alt_me_error\\\": \\\"\\\"}\"}],\"isError\":false}}\r\n\r\n"
+    },
+    "latencyMs": 30423,
+    "recordedAt": 1791263022509
+  }
+]
