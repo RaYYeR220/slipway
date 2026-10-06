@@ -1,0 +1,12 @@
+{
+  "name": "@slipway/agent",
+  "version": "0.1.0",
+  "description": "Language interface for Slipway: tool definitions, intent extraction and the numeric-provenance guard.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist"],
+  "license": "MIT",
+  "scripts": { "build": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json --noEmit" }
+}
