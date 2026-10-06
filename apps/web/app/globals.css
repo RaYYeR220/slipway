@@ -1,0 +1,58 @@
+/* Slipway design tokens — "current atlas": abyss neutrals, cmocean tempo for liquidity depth, cmocean solar for
+   cost, Bitget teal reserved for live data. */
+:root {
+  --ab-950: #050c10; --ab-900: #0a171d; --ab-800: #10222a; --ab-700: #183039; --ab-600: #24424c;
+  --ab-500: #3b5a63; --ab-400: #5f7e85; --ab-300: #8da6aa; --ab-200: #bfd0d0; --ab-100: #e3ecea; --ab-50: #f4f8f6;
+  --t-1: #151d44; --t-2: #1b3c56; --t-3: #1b5968; --t-4: #117777; --t-5: #2a937f; --t-6: #69ab89;
+  --t-7: #a1c1a1; --t-8: #d2d9c7; --t-9: #fff6f4;
+  --so-1: #331418; --so-2: #5b2023; --so-3: #822d22; --so-4: #a04519; --so-5: #b66413; --so-6: #c78616;
+  --so-7: #d4ab23; --so-8: #ddd236;
+  --live: #26bfd4;
+  --allow: #69ab89; --hold: #d4ab23; --refuse: #c0583b;
+  --buy: #01bc8d; --sell: #f1493f;
+
+  --bg: var(--ab-950); --surface: var(--ab-900); --raise: var(--ab-800); --line: var(--ab-700);
+  --text: var(--ab-100); --muted: var(--ab-300); --faint: var(--ab-400);
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px; --s-9: 96px;
+  --r: 2px;
+  --f-display: "Zodiak", Georgia, serif;
+  --f-body: "Switzer", system-ui, sans-serif;
+  --f-mono: "Azeret Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  /* printed-atlas mode */
+  --bg: #f6f1e7; --surface: #ece4d3; --raise: #e3d9c3; --line: #cfc3a9;
+  --text: #10212a; --muted: #3b5a63; --faint: #5f7e85;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f6f1e7; --surface: #ece4d3; --raise: #e3d9c3; --line: #cfc3a9;
+    --text: #10212a; --muted: #3b5a63; --faint: #5f7e85;
+    color-scheme: light;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: inherit; }
+::selection { background: var(--t-4); color: var(--ab-50); }
+:focus-visible { outline: 2px solid var(--live); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.02em; }
+.num { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
