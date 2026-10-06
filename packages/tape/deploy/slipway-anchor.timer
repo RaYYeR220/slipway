@@ -1,0 +1,10 @@
+[Unit]
+Description=Run slipway-anchor (*-*-* *:00/30:45)
+
+[Timer]
+OnCalendar=*-*-* *:00/30:45
+AccuracySec=1s
+Persistent=false
+
+[Install]
+WantedBy=timers.target

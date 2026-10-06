@@ -1,0 +1,35 @@
+{
+  "name": "@slipway/tape",
+  "version": "0.1.0",
+  "description": "Recorded Bitget tape for Slipway: tape reader, liquidity atlas, write-once forecast ledger, pre-registered evaluation, grading against the recorded book, Merkle anchoring and public verification.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "slipway-tape": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "bundle": "node scripts/bundle.mjs",
+    "verify": "node dist/verify-cli.js"
+  },
+  "dependencies": {
+    "@slipway/bitget": "workspace:*",
+    "@slipway/core": "workspace:*",
+    "viem": "^2.57.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

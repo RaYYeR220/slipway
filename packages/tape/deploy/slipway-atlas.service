@@ -1,0 +1,15 @@
+[Unit]
+Description=Slipway hourly liquidity atlas (digest closed tape hours, rebuild, publish derived/atlas.json)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=slipway
+Group=slipway
+WorkingDirectory=/opt/slipway/app
+EnvironmentFile=/opt/slipway/app/tape.env
+ExecStart=/usr/bin/node /opt/slipway/app/cli.mjs atlas
+Nice=10
+MemoryMax=700M
+TimeoutStartSec=1800

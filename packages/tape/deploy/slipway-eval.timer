@@ -1,0 +1,10 @@
+[Unit]
+Description=Run slipway-eval (*-*-* *:00/10:15)
+
+[Timer]
+OnCalendar=*-*-* *:00/10:15
+AccuracySec=1s
+Persistent=false
+
+[Install]
+WantedBy=timers.target

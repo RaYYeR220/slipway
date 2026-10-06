@@ -1,0 +1,17 @@
+[Unit]
+Description=Slipway Merkle-anchor new ledger entries on Arbitrum One
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/opt/slipway/anchor.env
+
+[Service]
+Type=oneshot
+User=slipway
+Group=slipway
+WorkingDirectory=/opt/slipway/app
+EnvironmentFile=/opt/slipway/app/tape.env
+EnvironmentFile=/opt/slipway/anchor.env
+ExecStart=/usr/bin/node /opt/slipway/app/cli.mjs anchor
+Nice=10
+MemoryMax=700M
+TimeoutStartSec=600
