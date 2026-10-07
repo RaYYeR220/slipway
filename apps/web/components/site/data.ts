@@ -152,11 +152,72 @@ export interface GradePoint {
 }
 
 export interface GradeSample {
+  source: string; // where the points came from, shown under the figure
   files: number;
   filesListed: number;
   from: number | null;
   to: number | null;
   points: GradePoint[];
+}
+
+/* ---------- derived/track-record-points.json (published by every grade run) ---------- */
+
+interface PublishedPoint {
+  id: string;
+  symbol: string;
+  venue: string;
+  session: string;
+  family: string;
+  scope: "order" | "slice";
+  horizonSec: number;
+  registeredAt: number;
+  at: number;
+  predicted: { p50: number; p10?: number; p90?: number };
+  realized: { shadow: number; modeled?: number; bound?: number };
+}
+
+export const POINTS_URL = `${PUBLIC_BASE}/derived/track-record-points.json`;
+
+const horizonBucket = (s: number) => (s <= 60 ? "0-60s" : s <= 900 ? "1-15m" : s <= 21_600 ? "15m-6h" : ">6h");
+
+async function getPublishedPoints(): Promise<Fetched<GradeSample>> {
+  const r = await getJson<{ points?: PublishedPoint[] } | PublishedPoint[]>(POINTS_URL, 60);
+  if (!r.ok) return r;
+  const rows = Array.isArray(r.data) ? r.data : (r.data.points ?? []);
+  const points: GradePoint[] = rows
+    .filter((p) => p.scope === "order" && typeof p.realized?.shadow === "number")
+    .map((p) => ({
+      at: p.at,
+      symbol: p.symbol,
+      venue: p.venue,
+      session: p.session,
+      family: p.family,
+      horizon: horizonBucket(p.horizonSec),
+      chosen: false,
+      p10: p.predicted.p10 ?? null,
+      p50: p.predicted.p50,
+      p90: p.predicted.p90 ?? null,
+      realized: {
+        // omitted labels equal the shadow fill at the published precision
+        REPRODUCIBLE: p.realized.shadow,
+        MODELED: p.realized.modeled ?? p.realized.shadow,
+        BOUND: p.realized.bound ?? p.realized.shadow,
+      },
+    }));
+  if (!points.length) return { ok: false, error: "no graded order points published", url: POINTS_URL };
+  const ts = points.map((p) => p.at);
+  return {
+    ok: true,
+    url: POINTS_URL,
+    data: {
+      source: "derived/track-record-points.json · the latest graded order-level forecasts",
+      files: 1,
+      filesListed: 1,
+      from: Math.min(...ts),
+      to: Math.max(...ts),
+      points,
+    },
+  };
 }
 
 interface Listing {
@@ -180,8 +241,10 @@ async function listNames(prefix: string, revalidate = 60): Promise<Fetched<strin
   return { ok: true, data: names, url: `${LISTING_BASE}?prefix=${prefix}` };
 }
 
-/** The most recent `maxFiles` grade files (one per eval batch), order-level graded forecasts only. */
+/** Graded order-level forecasts: the published points file, else the most recent `maxFiles` raw grade files. */
 export async function getGradeSample(maxFiles = 48): Promise<Fetched<GradeSample>> {
+  const published = await getPublishedPoints();
+  if (published.ok) return published;
   const listed = await listNames("grades/eval/");
   if (!listed.ok) return listed;
   const names = listed.data.filter((n) => n.endsWith(".json")).sort();
@@ -219,6 +282,7 @@ export async function getGradeSample(maxFiles = 48): Promise<Fetched<GradeSample
     ok: true,
     url: listed.url,
     data: {
+      source: `grades/eval/ · latest ${read} of ${names.length} grade files, one batch each`,
       files: read,
       filesListed: names.length,
       from: ts.length ? Math.min(...ts) : null,

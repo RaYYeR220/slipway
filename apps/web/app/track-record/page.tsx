@@ -201,12 +201,9 @@ export default async function TrackRecordPage({
                         ) within 1 bp of the forecast, {num(within(5))} ({pct(within(5) / points.length)})
                         within 5 bp.
                       </em>{" "}
-                      Costs in bp of arrival mid, fees included; positive is a cost to the trader. Sample: the
-                      latest {num(sample.data.files)} of {num(sample.data.filesListed)} grade files (
-                      {nyTime(sample.data.from)} to {nyTime(sample.data.to)}).
-                      <span className={ui.source}>
-                        {LISTING_BASE}?prefix=grades/eval/ · each file holds one batch’s per-forecast grades
-                      </span>
+                      Costs in bp of arrival mid, fees included; positive is a cost to the trader. Sample:{" "}
+                      {nyTime(sample.data.from)} to {nyTime(sample.data.to)}.
+                      <span className={ui.source}>{sample.data.source}</span>
                     </p>
                   </figure>
                   <figure className={ui.plate}>
