@@ -73,7 +73,7 @@ async function body(req: Request): Promise<unknown> {
 // The public demo needs no credentials, so the model route is bounded instead: a per-client token bucket, a
 // global ceiling that key rotation cannot exceed, a cap on conversation length and on characters sent upstream.
 // Buckets live per server instance, so these are best-effort bounds, backed by the provider account's own limit.
-const CHAT_LIMIT = { burst: 6, perMinute: 6, globalPerMinute: 60, maxMessages: 24, maxChars: 24_000 };
+const CHAT_LIMIT = { burst: 6, perMinute: 6, globalPerMinute: 60, maxMessages: 24, maxChars: 24_000, maxTotalChars: 64_000 };
 const IDLE_MS = 10 * 60_000;
 const buckets = new Map<string, { tokens: number; at: number }>();
 const global = { tokens: CHAT_LIMIT.globalPerMinute, at: Date.now() };
@@ -87,8 +87,8 @@ function clientKey(req: Request): string {
   return vercel || real || hops[hops.length - 1] || "anon";
 }
 
-// Only what people typed counts toward the conversation cap; tool outputs are bounded by the body limit and are
-// reduced to their slots before they reach the model.
+// Two caps: what people typed, and everything the client sends back (tool outputs included), since all of it can
+// reach the model. The desk client compacts old tool outputs to their slots, so real conversations stay far below.
 function typedChars(messages: Record<string, unknown>[]): number {
   let n = 0;
   for (const m of messages) {
@@ -188,7 +188,11 @@ export function createApiHandlers(desk: Desk = new Desk(), agent: AgentOptions =
             429,
           );
         const b = ChatRequestSchema.parse(await body(req));
-        if (b.messages.length > CHAT_LIMIT.maxMessages || typedChars(b.messages) > CHAT_LIMIT.maxChars)
+        if (
+          b.messages.length > CHAT_LIMIT.maxMessages ||
+          typedChars(b.messages) > CHAT_LIMIT.maxChars ||
+          JSON.stringify(b.messages).length > CHAT_LIMIT.maxTotalChars
+        )
           throw new DeskError("conversation too long, start a new one", "BAD_INPUT");
         return runTurn(
           { messages: b.messages as unknown as UIMessage[], profile: b.profile ?? DEFAULT_PROFILE },
