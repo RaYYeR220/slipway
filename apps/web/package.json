@@ -9,10 +9,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/react": "4.0.131",
     "@slipway/agent": "workspace:^",
     "@slipway/core": "workspace:^",
     "@slipway/mcp": "workspace:^",
     "@slipway/sdk": "workspace:^",
+    "ai": "^7.0.128",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

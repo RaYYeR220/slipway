@@ -1,0 +1,40 @@
+/* Desk frame: the site header, then a conversation sheet docked beside the plan canvas, filling the viewport. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+.page > header {
+  flex: none;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.desk {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(340px, 412px) minmax(0, 1fr);
+}
+
+@media (max-width: 900px) {
+  .page {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .desk {
+    display: block;
+  }
+}
+
+/* Live data stays Bitget teal; on printed-atlas paper its text needs a deeper ink to stay readable (4.5:1). */
+.page {
+  --live-ink: var(--live);
+}
+:global(:root[data-theme="light"]) .page {
+  --live-ink: #0e7385;
+}
