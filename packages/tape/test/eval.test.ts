@@ -11,6 +11,7 @@ import {
   plansName,
   runBatch,
   type SnapshotBundle,
+  snapshotFor,
   snapshotsName,
 } from "../src/eval/run.js";
 import { checkChain, ObjectLedgerStore } from "../src/ledger.js";
@@ -29,6 +30,7 @@ const atlasDoc: AtlasDoc = {
   gapSigmaBps: { MSTR: snap.gapSigmaBps as Record<string, number> },
   basisSigmaBpsPerSqrtHour: { MSTR: snap.basisSigmaBpsPerSqrtHour as number },
   coverage: {},
+  hourOfWeek: {},
   flags: [],
 };
 
@@ -60,7 +62,8 @@ describe("evaluation batch", () => {
     expect(m.batchId).toBe(batchIdOf(batchStart));
     const orders = drawBatch(protocol, batchStart);
     expect(m.orders.map((o) => o.symbol)).toEqual(orders.map((o) => o.symbol));
-    expect(loaded).toEqual([...new Set(orders.map((o) => o.symbol))]);
+    // every order gets its own fresh snapshot, even when its symbol was drawn before
+    expect(loaded).toEqual(orders.map((o) => o.symbol));
     const mstr = m.orders.filter((o) => o.symbol === "MSTR");
     expect(mstr.length).toBeGreaterThan(0);
     for (const o of m.orders) expect(o.status).toBe(o.symbol === "MSTR" ? "registered" : "no_snapshot");
@@ -78,9 +81,12 @@ describe("evaluation batch", () => {
     const bundle = JSON.parse(
       gunzipSync((await store.get(snapshotsName(m.batchId)))?.data as Buffer).toString(),
     ) as SnapshotBundle;
-    expect(Object.keys(bundle.snapshots)).toEqual(["MSTR"]);
-    expect(bundle.snapshots.MSTR?.books).toEqual(snap.books);
-    expect(bundle.snapshots.MSTR?.sources.at(-1)?.id).toBe("slipway.atlas");
+    const mstrOrders = orders.filter((o) => o.symbol === "MSTR").map((o) => o.i);
+    expect(Object.keys(bundle.snapshots)).toEqual(mstrOrders.map((i, k) => (k === 0 ? "MSTR" : `MSTR#${i}`)));
+    for (const i of mstrOrders) {
+      expect(snapshotFor(bundle, i, "MSTR")?.books).toEqual(snap.books);
+      expect(snapshotFor(bundle, i, "MSTR")?.sources.at(-1)?.id).toBe("slipway.atlas");
+    }
     const plans = JSON.parse(
       gunzipSync((await store.get(plansName(m.batchId)))?.data as Buffer).toString(),
     ) as {

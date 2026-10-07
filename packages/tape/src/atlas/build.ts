@@ -32,7 +32,44 @@ export interface AtlasDoc {
   gapSigmaBps: Record<string, Record<string, number>>; // symbol → "venue|from->to" → σ bps
   basisSigmaBpsPerSqrtHour: Record<string, number>;
   coverage: Record<string, Coverage>;
+  hourOfWeek: Record<string, HourOfWeekBucket[]>; // "symbol|venue" → buckets with enough data, by NY hour of week
   flags: string[];
+}
+
+export interface HourOfWeekBucket {
+  hour: number; // 0 = Sunday 00:00 New York … 167 = Saturday 23:00
+  spreadBpsP50: number;
+  depthUsd25P50: number;
+  n: number; // books15 snapshots in the bucket's hour
+}
+
+export const HOW_MIN_FRAMES = 60;
+export const HOW_MIN_DEPTH = 10;
+
+/**
+ * Hour-of-week liquidity profile per instrument: for every NY hour of the week, the most recent recorded UTC hour
+ * that maps to it, kept only with ≥ 60 books15 snapshots and ≥ 10 REST depth snapshots.
+ */
+export async function hourOfWeekProfile(
+  digests: DigestStore,
+  hours: readonly string[], // newest first
+): Promise<Record<string, HourOfWeekBucket[]>> {
+  const seen = new Set<string>();
+  const out: Record<string, HourOfWeekBucket[]> = {};
+  for (const h of hours) {
+    for (const x of await digests.summaries(h)) {
+      const key = `${x.symbol}|${x.venue}`;
+      if (seen.has(`${key}|${x.hourOfWeek}`)) continue;
+      if (x.n < HOW_MIN_FRAMES || x.nDepth < HOW_MIN_DEPTH || x.depthUsd25P50 === null) continue;
+      seen.add(`${key}|${x.hourOfWeek}`);
+      out[key] = [
+        ...(out[key] ?? []),
+        { hour: x.hourOfWeek, spreadBpsP50: x.spreadBpsP50, depthUsd25P50: x.depthUsd25P50, n: x.n },
+      ];
+    }
+  }
+  for (const k of Object.keys(out)) out[k]?.sort((a, b) => a.hour - b.hour);
+  return Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)));
 }
 
 export const ATLAS_SESSIONS: Session[] = ["pre_market", "regular", "after_hours", "overnight", "weekend"];
@@ -78,6 +115,13 @@ export async function realBook(
   return null;
 }
 
+/** The most recent recorded hours of a session that a key is built from. */
+export const pickHours = (hours: readonly string[], session: Session, o: AtlasBuildOptions): string[] =>
+  hours.filter((h) => sessionsInHour(h, o.holidays).has(session)).slice(0, o.maxSessionHours);
+
+/** Key results by input signature: closed digest hours are immutable, so unchanged inputs give unchanged stats. */
+export type KeyCache = Map<string, { sig: string; result: KeyResult }>;
+
 export async function buildKey(
   digests: DigestStore,
   source: TapeSource,
@@ -88,7 +132,7 @@ export async function buildKey(
   o: AtlasBuildOptions,
 ): Promise<KeyResult> {
   const key = atlasKey(symbol, venue, session);
-  const picked = hours.filter((h) => sessionsInHour(h, o.holidays).has(session)).slice(0, o.maxSessionHours);
+  const picked = pickHours(hours, session, o);
   const books: Book[] = [];
   const depth: Book[] = [];
   const trades: TapeTrade[] = [];
@@ -141,7 +185,8 @@ export async function buildAtlas(
   digests: DigestStore,
   source: TapeSource,
   options: Partial<AtlasBuildOptions> & Pick<AtlasBuildOptions, "symbols" | "holidays" | "now">,
-): Promise<Pick<AtlasDoc, "atlas" | "coverage" | "flags" | "window">> {
+  cache: KeyCache = new Map(),
+): Promise<Pick<AtlasDoc, "atlas" | "coverage" | "flags" | "window" | "hourOfWeek">> {
   const o: AtlasBuildOptions = { ...ATLAS_DEFAULTS, ...options };
   const since = hourKey(o.now - o.lookbackDays * 24 * HOUR_MS);
   const hours = (await digests.hours()).filter((h) => h >= since).reverse();
@@ -153,8 +198,12 @@ export async function buildAtlas(
   for (const symbol of o.symbols) {
     for (const venue of o.venues ?? (["rtoken", "perp"] as const)) {
       for (const session of ATLAS_SESSIONS) {
-        const r = await buildKey(digests, source, symbol, venue, session, hours, o);
         const key = atlasKey(symbol, venue, session);
+        const sig = `${o.minFrames}|${o.holidays.length}|${pickHours(hours, session, o).join(",")}`;
+        const hit = cache.get(key);
+        const r =
+          hit?.sig === sig ? hit.result : await buildKey(digests, source, symbol, venue, session, hours, o);
+        cache.set(key, { sig, result: r });
         if (r.coverage.snapshots > 0 || r.stats) coverage[key] = r.coverage;
         flags.push(...r.flags);
         if (r.stats) {
@@ -169,6 +218,7 @@ export async function buildAtlas(
     atlas,
     coverage,
     flags,
+    hourOfWeek: await hourOfWeekProfile(digests, hours),
     window: { from: Number.isFinite(from) ? from : o.now, to: Number.isFinite(to) ? to : o.now },
   };
 }

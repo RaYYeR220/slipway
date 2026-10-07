@@ -16,7 +16,8 @@ async function all(stream: "books" | "trades" | "depth", source = src): Promise<
 describe("tape reader", () => {
   it("lists hour files per stream", async () => {
     expect(await src.hours("books")).toEqual([HOUR]);
-    expect(await src.hours("states")).toEqual([]);
+    expect(await src.hours("states")).toEqual([HOUR]);
+    expect(await new FsTapeSource(fix("tape-open")).hours("trades")).toEqual([]);
     expect(
       await hoursIn(src, "books", Date.parse("2026-10-06T03:00Z"), Date.parse("2026-10-06T05:00Z")),
     ).toEqual([HOUR]);

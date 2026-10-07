@@ -15,7 +15,7 @@ import { anchorClient, FORECAST_ANCHOR_ABI, readAnchors } from "./anchor/contrac
 import type { AnchorFile } from "./anchor/job.js";
 import { merkleProof, merkleRoot, verifyProof } from "./anchor/merkle.js";
 import { mulberry32, PROTOCOL_HASH } from "./eval/protocol.js";
-import type { BatchManifest, SnapshotBundle } from "./eval/run.js";
+import { type BatchManifest, type SnapshotBundle, snapshotFor } from "./eval/run.js";
 import { evalContext, type Graded, gradePlans, groupPlans } from "./grade/grade.js";
 import { CHAINS, type ChainRead, checkChain, ObjectLedgerStore } from "./ledger.js";
 import type { TapeSource } from "./source.js";
@@ -200,7 +200,8 @@ export async function runVerify(o: VerifyOptions): Promise<Check[]> {
         if (!g || !m) return { missing: "manifest not found" };
         if (!bundles.has(m.batchId))
           bundles.set(m.batchId, await json<SnapshotBundle>(o.store, m.snapshotObject));
-        const snap = bundles.get(m.batchId)?.snapshots[p.order.symbol];
+        const b = bundles.get(m.batchId);
+        const snap = b && g.order !== undefined ? snapshotFor(b, g.order, p.order.symbol) : undefined;
         if (!snap) return { missing: "snapshot not found" };
         const extra: { batchId: string; order?: number; roles?: string[] } = { batchId: m.batchId };
         if (g.order !== undefined) extra.order = g.order;

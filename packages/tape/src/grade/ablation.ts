@@ -109,8 +109,14 @@ export function replayAblations(
       return { source: "", chosen: null, error: (e as Error).message };
     }
   };
+  const base = run(snap);
+  const same = JSON.stringify(snap);
   return {
-    baseline: run(snap).chosen,
-    replays: ABLATIONS.map((a) => ({ ...run(a.apply(snap)), source: a.source })),
+    baseline: base.chosen,
+    // removing a source the snapshot never had (e.g. no events) leaves the inputs identical: no replay needed
+    replays: ABLATIONS.map((a) => {
+      const s = a.apply(snap);
+      return { ...(JSON.stringify(s) === same ? base : run(s)), source: a.source };
+    }),
   };
 }

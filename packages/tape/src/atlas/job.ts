@@ -1,10 +1,11 @@
 // Hourly atlas job: digest closed tape hours, rebuild the atlas, add gap/basis σ from 60 days of 1 h candles.
-import { rm } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { BitgetRest } from "@slipway/bitget";
+import { type BitgetRest, type IntegrityFlag, parseStates } from "@slipway/bitget";
 import { type HolidayClosure, nyseHolidayClosures, sessionAt } from "@slipway/core";
+import { hourLines } from "../read.js";
 import { HOUR_MS, hourKey, hourStart, type TapeSource } from "../source.js";
-import { type AtlasDoc, buildAtlas } from "./build.js";
+import { type AtlasDoc, buildAtlas, type KeyCache, type KeyResult } from "./build.js";
 import { basisSigma, gapSigmas, hourlyCandles } from "./candles.js";
 import { DigestStore, digestHour } from "./digest.js";
 
@@ -72,14 +73,27 @@ export async function runAtlasJob(o: AtlasJobOptions): Promise<AtlasDoc> {
   const digests = new DigestStore(join(o.work, "digest"));
   await digestClosedHours(o.source, digests, o.now, lookbackDays, log);
   const { closures: holidays, flags: calFlags } = await allHolidays(o.rest);
-  const built = await buildAtlas(digests, o.source, {
-    symbols: o.symbols,
-    holidays,
-    now: o.now,
-    lookbackDays,
-    ...(o.maxSessionHours ? { maxSessionHours: o.maxSessionHours } : {}),
-  });
-  const flags = [...calFlags, ...built.flags];
+  const cacheFile = join(o.work, "atlas-key-cache.json");
+  let cache: KeyCache = new Map();
+  try {
+    cache = new Map(
+      JSON.parse(await readFile(cacheFile, "utf8")) as [string, { sig: string; result: KeyResult }][],
+    );
+  } catch {}
+  const built = await buildAtlas(
+    digests,
+    o.source,
+    {
+      symbols: o.symbols,
+      holidays,
+      now: o.now,
+      lookbackDays,
+      ...(o.maxSessionHours ? { maxSessionHours: o.maxSessionHours } : {}),
+    },
+    cache,
+  );
+  await writeFile(cacheFile, JSON.stringify([...cache]));
+  const flags = [...calFlags, ...(await realityStateFlags(o.source)), ...built.flags];
   const gapSigmaBps: AtlasDoc["gapSigmaBps"] = {};
   const basisSigmaBpsPerSqrtHour: AtlasDoc["basisSigmaBpsPerSqrtHour"] = {};
   const candleDays = o.candleDays ?? 60;
@@ -132,6 +146,42 @@ export async function runAtlasJob(o: AtlasJobOptions): Promise<AtlasDoc> {
     gapSigmaBps,
     basisSigmaBpsPerSqrtHour,
     coverage: built.coverage,
+    hourOfWeek: built.hourOfWeek,
     flags,
   };
+}
+
+/**
+ * Integrity of Bitget's Reality session labels as recorded (e.g. daylightType "standard" / EST while New York is on
+ * EDT): checked on the newest recorded states snapshots, one flag per finding with when it was last observed.
+ */
+export async function realityStateFlags(source: TapeSource): Promise<string[]> {
+  const hours = (await source.hours("states")).slice(-2);
+  const found = new Map<string, { detail: string; at: number; n: number }>();
+  let checked = 0;
+  for (const h of hours) {
+    for await (const line of hourLines(source, "states", h)) {
+      let r: { rx: number; data: unknown };
+      try {
+        r = JSON.parse(line) as { rx: number; data: unknown };
+      } catch {
+        continue;
+      }
+      let flags: IntegrityFlag[];
+      try {
+        flags = parseStates({ code: "00000", data: r.data }, r.rx).flags;
+      } catch {
+        continue;
+      }
+      checked++;
+      for (const f of flags) {
+        const cur = found.get(f.code);
+        found.set(f.code, { detail: f.detail, at: Math.max(cur?.at ?? 0, r.rx), n: (cur?.n ?? 0) + 1 });
+      }
+    }
+  }
+  return [...found].map(
+    ([code, f]) =>
+      `${code} (bitget.reality.session-states, ${f.n}/${checked} recorded snapshots, last ${new Date(f.at).toISOString()}): ${f.detail}`,
+  );
 }

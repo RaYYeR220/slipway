@@ -106,7 +106,7 @@ async function grade() {
   const cfg = loadConfig();
   const t0 = Date.now();
   const store = new MirrorStore(await cfg.store(), join(cfg.work, "mirror"));
-  const tr = await runGradeJob({
+  const { record: tr, points } = await runGradeJob({
     store,
     source: cfg.source,
     work: cfg.work,
@@ -118,7 +118,11 @@ async function grade() {
   });
   await mkdir(join(cfg.work, "derived"), { recursive: true });
   await writeAtomic(join(cfg.work, "derived", "track-record.json"), JSON.stringify(tr));
-  if (process.env.NO_PUBLISH !== "1") await publishJson(store, "derived/track-record.json", tr);
+  await writeAtomic(join(cfg.work, "derived", "track-record-points.json"), JSON.stringify(points));
+  if (process.env.NO_PUBLISH !== "1") {
+    await publishJson(store, "derived/track-record.json", tr);
+    await publishJson(store, "derived/track-record-points.json", points);
+  }
   log(`track record: eval ${JSON.stringify(tr.counts.eval)}, ${Date.now() - t0} ms`);
 }
 

@@ -13,8 +13,8 @@ import {
   venueTradable,
 } from "@slipway/core";
 import type { AtlasDoc } from "../atlas/build.js";
-import { PROTOCOL_HASH, type Protocol } from "../eval/protocol.js";
-import type { BatchManifest, SnapshotBundle } from "../eval/run.js";
+import { mulberry32, PROTOCOL_HASH, type Protocol } from "../eval/protocol.js";
+import { type BatchManifest, type SnapshotBundle, snapshotFor } from "../eval/run.js";
 import { CHAINS, type Chain, chainIndex, loadObject, loadSummaryCache, saveSummaryCache } from "../ledger.js";
 import { nearestBooks } from "../read.js";
 import { HOUR_MS, hourStart, type TapeSource } from "../source.js";
@@ -34,6 +34,7 @@ import {
   type ScheduleOutcome,
   scheduleFromQuote,
 } from "./grade.js";
+import { headToHeadRows, LatestGraded, type PointsDoc, pointsDoc } from "./points.js";
 import { orderRealized, type ScheduleSlice } from "./realize.js";
 import {
   AccuracyAccumulator,
@@ -58,6 +59,8 @@ export interface GradeJobOptions {
   rest: BitgetRest;
   now: number;
   publish?: boolean;
+  maxReplaysPerRun?: number;
+  ablationOrdersPerBatch?: number;
   log?: (m: string) => void;
 }
 
@@ -142,6 +145,9 @@ class Bundles {
   }
 }
 
+/** Orders per batch replayed for the source ablation (seeded sample; batches before 2026-10-07 12:40Z used all). */
+export const ABLATION_ORDERS_PER_BATCH = 3;
+
 /** Hour files are final (and synced to the public bucket) this long after the hour ends. */
 export const HOUR_FINAL_AFTER_MS = 5 * 60_000;
 
@@ -162,7 +168,12 @@ export function primaryVenue(snap: MarketSnapshot): Venue {
   return snap.books.rtoken && venueTradable("rtoken", s, snap.sessions) ? "rtoken" : "perp";
 }
 
-export async function runGradeJob(o: GradeJobOptions): Promise<TrackRecord> {
+export interface GradeJobResult {
+  record: TrackRecord;
+  points: PointsDoc;
+}
+
+export async function runGradeJob(o: GradeJobOptions): Promise<GradeJobResult> {
   const log = o.log ?? (() => {});
   const end = await gradableUntil(o.source, o.now);
   const resultsDir = join(o.work, "grade", "results");
@@ -206,12 +217,13 @@ export async function runGradeJob(o: GradeJobOptions): Promise<TrackRecord> {
     const m = ref ? idx.manifests.get(ref.batchId) : undefined;
     if (!ref || !m) return { missing: "batch manifest not found for this plan" };
     const b = await bundles.get(m);
-    const snap = b?.snapshots[p.order.symbol];
+    const snap = b ? snapshotFor(b, ref.order, p.order.symbol) : undefined;
     if (!snap) return { missing: "saved snapshot not found for this plan" };
     return evalContext(snap, ref);
   };
 
   const counts = {} as TrackRecord["counts"];
+  const latest = new LatestGraded();
   const anchors = await anchoredWindows(o.store);
   const acc = Object.fromEntries(LABELS.map((l) => [l, new AccuracyAccumulator(l)]));
   const orderRows: Graded[] = [];
@@ -228,6 +240,7 @@ export async function runGradeJob(o: GradeJobOptions): Promise<TrackRecord> {
     counts[chain] = c;
     const consume = (rows: readonly Graded[]) => {
       for (const g of rows) {
+        latest.push(g);
         c[g.status]++;
         if (g.status === "ungraded")
           reasons[g.reason ?? "unknown"] = (reasons[g.reason ?? "unknown"] ?? 0) + 1;
@@ -309,7 +322,7 @@ export async function runGradeJob(o: GradeJobOptions): Promise<TrackRecord> {
     const b = await bundles.get(m);
     if (!b) continue;
     meta[m.batchId] = m.orders.flatMap((x) => {
-      const snap = b.snapshots[x.symbol];
+      const snap = snapshotFor(b, x.i, x.symbol);
       if (x.status !== "registered" || !snap) return [];
       return [
         {
@@ -339,8 +352,9 @@ export async function runGradeJob(o: GradeJobOptions): Promise<TrackRecord> {
       );
   }
   const ablation = await runAblations(o, idx, bundles, orderRows, end, log);
+  const points = pointsDoc(o.now, latest.latest(), headToHeadRows(outcomes));
 
-  return {
+  const record: TrackRecord = {
     generatedAt: o.now,
     protocol: { name: o.protocol.name, version: o.protocol.version, hash: PROTOCOL_HASH },
     tapeEnd: end,
@@ -362,9 +376,11 @@ export async function runGradeJob(o: GradeJobOptions): Promise<TrackRecord> {
       "TWAP-60 baseline: the planner prices it only when it has at least two $5k clips, so $5k orders have no TWAP comparison.",
       "Head-to-head baselines use the planner's baseline venue per order (rToken when tradable at arrival, else perp).",
       "Calibration factors are applied only to forecasts registered after the outcomes they were fitted on (time split).",
+      `Source ablation replays a seeded sample of ${ABLATION_ORDERS_PER_BATCH} orders per batch (every order for batches registered before 2026-10-07 12:40 UTC) to stay inside the VM's CPU budget; removing a source the snapshot did not contain is not replayed.`,
       "Forecasts whose outcome precedes their on-chain anchor are reported as ledger-timestamped only.",
     ],
   };
+  return { record, points };
 }
 
 async function anchoredWindows(
@@ -413,8 +429,19 @@ async function replayBatch(
   b: SnapshotBundle,
 ): Promise<AblationOrder[]> {
   const out: AblationOrder[] = [];
+  // a seeded sample of each batch's orders: planner replays are the costliest thing the VM does
+  const rand = mulberry32(o.protocol.seed ^ Math.floor(m.batchStart / 60_000) ^ 0x5a17);
+  const sample = new Set(
+    m.orders
+      .filter((x) => x.status === "registered")
+      .map((x) => ({ x, r: rand() }))
+      .sort((a, b) => a.r - b.r)
+      .slice(0, o.ablationOrdersPerBatch ?? ABLATION_ORDERS_PER_BATCH)
+      .map((y) => y.x.i),
+  );
   for (const x of m.orders) {
-    const snap = b.snapshots[x.symbol];
+    if (!sample.has(x.i)) continue;
+    const snap = snapshotFor(b, x.i, x.symbol);
     if (x.status !== "registered" || !snap) continue;
     const rep = replayAblations(
       snap,
@@ -469,6 +496,7 @@ async function runAblations(
   }
   const all: AblationOrder[] = [];
   let batches = 0;
+  let replays = 0;
   for (const m of [...idx.manifests.values()].sort((a, b) => a.batchStart - b.batchStart)) {
     const file = join(dir, `${m.batchId}.json`);
     let orders: AblationOrder[] | null = null;
@@ -487,13 +515,15 @@ async function runAblations(
         (rowsByOrder.get(`${m.batchId}:${x.i}`) ?? []).some((g) => g.roles?.includes("chosen")),
     );
     if (!orders) {
-      if (!due) continue;
+      // planner replays are the expensive part: a bounded number per run keeps the job inside its 5-minute slot
+      if (!due || replays >= (o.maxReplaysPerRun ?? 2)) continue;
+      replays++;
       const b = await bundles.get(m);
       if (!b) continue;
       orders = await replayBatch(o, m, b);
       log(`ablation ${m.batchId}: replayed ${orders.length} orders × ${ABLATIONS.length} sources`);
     }
-    const jobs: { s: AblationSource; symbol: string }[] = [];
+    const jobs: { s: AblationSource; symbol: string; order: number }[] = [];
     for (const x of orders) {
       const rows = rowsByOrder.get(x.key) ?? [];
       const row = (id: string | null) => rows.find((r) => r.strategyId === id);
@@ -519,19 +549,22 @@ async function runAblations(
           o.now >= lastTime(s.schedule) + DUE_AFTER_MS &&
           lastTime(s.schedule) + MATCH_WINDOW_MS <= end
         )
-          jobs.push({ s, symbol: x.symbol });
+          jobs.push({ s, symbol: x.symbol, order: Number(x.key.slice(x.key.lastIndexOf(":") + 1)) });
       }
     }
     if (jobs.length) {
       const b = await bundles.get(m);
-      const runnable = jobs.filter((j) => b?.snapshots[j.symbol]);
+      const runnable = jobs.filter((j) => b && snapshotFor(b, j.order, j.symbol));
       const out = await realizeJobs(
         o.source,
         runnable.map((j) => ({
           symbol: j.symbol,
           parentQty: j.s.parentQty as number,
           schedule: j.s.schedule as ScheduleSlice[],
-          ctx: evalContext(b?.snapshots[j.symbol] as Parameters<typeof evalContext>[0], {}),
+          ctx: evalContext(
+            snapshotFor(b as SnapshotBundle, j.order, j.symbol) as Parameters<typeof evalContext>[0],
+            {},
+          ),
         })),
       );
       runnable.forEach((j, k) => {

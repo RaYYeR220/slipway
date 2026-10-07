@@ -1,10 +1,11 @@
 import type { Candle } from "@slipway/bitget";
 import { type Book, depthWithin, mid, nyseHolidayClosures, sessionAt, spreadBps } from "@slipway/core";
 import { describe, expect, it } from "vitest";
-import { buildAtlas, buildKey, realBook } from "../src/atlas/build.js";
+import { buildAtlas, buildKey, hourOfWeekProfile, realBook } from "../src/atlas/build.js";
 import { basisSigma, gapSigmas } from "../src/atlas/candles.js";
 import { packBook, unpackBook } from "../src/atlas/compact.js";
-import { DigestStore, digestHour } from "../src/atlas/digest.js";
+import { DigestStore, digestHour, summarizeHour } from "../src/atlas/digest.js";
+import { realityStateFlags } from "../src/atlas/job.js";
 import { hourLines } from "../src/read.js";
 import { type BookRecord, toBook } from "../src/records.js";
 import { FsTapeSource } from "../src/source.js";
@@ -127,5 +128,33 @@ describe("gap and basis σ from real 1 h candles", () => {
       sessionAt,
     );
     expect(none.n).toBe(0);
+  });
+});
+
+describe("hour-of-week profile and Reality label integrity", () => {
+  it("summarises a recorded hour into its New York hour-of-week bucket", async () => {
+    const d = await digestHour(src, HOUR);
+    const perp = summarizeHour(HOUR, d.get("P_NVDA") as NonNullable<ReturnType<typeof d.get>>);
+    // 2026-10-06 04:00 UTC = Tuesday 00:00 EDT → 2 × 24 + 0
+    expect(perp.hourOfWeek).toBe(48);
+    expect(perp.n).toBe(d.get("P_NVDA")?.frames.length);
+    expect(perp.nDepth).toBe(4);
+    expect(perp.spreadBpsP50).toBeGreaterThan(0);
+    expect(perp.depthUsd25P50).toBeGreaterThan(0);
+    const store = new DigestStore(tempDir());
+    await store.write(HOUR, d);
+    expect((await store.summaries(HOUR)).find((x) => x.venue === "perp")).toEqual(perp);
+    // four REST depth snapshots in this 4-minute slice: below the 10 required, so no bucket is published
+    expect(await hourOfWeekProfile(store, [HOUR])).toEqual({});
+  });
+
+  it("flags Bitget's EST label while New York is on daylight time", async () => {
+    const flags = await realityStateFlags(src);
+    expect(flags).toHaveLength(1);
+    expect(flags[0]).toMatch(
+      /^TZ_LABEL_MISMATCH \(bitget\.reality\.session-states, \d+\/\d+ recorded snapshots/,
+    );
+    expect(flags[0]).toContain('daylightType "standard"');
+    expect(flags[0]).toContain("EDT (UTC-4)");
   });
 });

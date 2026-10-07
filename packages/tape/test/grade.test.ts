@@ -5,6 +5,7 @@ import { type Book, costVsMid, type ForecastEntry, mid, walk } from "@slipway/co
 import { describe, expect, it } from "vitest";
 import { evalContext, type Graded, gradePlans, groupPlans, scheduleOf } from "../src/grade/grade.js";
 import { gradableUntil, HOUR_FINAL_AFTER_MS } from "../src/grade/job.js";
+import { headToHeadRows, pointsDoc } from "../src/grade/points.js";
 import { horizonBucket, orderRealized, type ScheduleSlice, tradeThroughFill } from "../src/grade/realize.js";
 import { type BookRecord, toBook } from "../src/records.js";
 import { FsTapeSource } from "../src/source.js";
@@ -156,5 +157,44 @@ describe("grading horizon", () => {
     const h06 = Date.parse("2026-10-06T06:00:00Z");
     expect(await gradableUntil(tape, h06 + 3_600_000 + HOUR_FINAL_AFTER_MS)).toBe(h06 + 3_600_000);
     expect(await gradableUntil(tape, h06 + 3_600_000 + HOUR_FINAL_AFTER_MS - 1)).toBe(0);
+  });
+});
+
+describe("track-record points", () => {
+  it("publishes compact predicted/realized points and per-order baseline rows under the size budget", async () => {
+    const rows = await grade();
+    const graded = rows.filter((g) => g.status === "graded");
+    const doc = pointsDoc(1, graded, []);
+    expect(doc.points.length).toBe(graded.length);
+    const imm = doc.points.find((p) => p.scope === "order" && p.id === orderRow(rows, "immediate:perp").id);
+    expect(imm).toMatchObject({ symbol: "MSTR", venue: "perp", family: "immediate", scope: "order" });
+    // a single slice has no own-impact difference: only the shadow cost is listed
+    expect(Object.keys(imm?.realized ?? {})).toEqual(["shadow"]);
+    expect(imm?.realized.shadow).toBe(
+      Math.round((orderRow(rows, "immediate:perp").realized?.REPRODUCIBLE as number) * 100) / 100,
+    );
+    const small = pointsDoc(1, graded, [], 2_000);
+    expect(JSON.stringify(small).length).toBeLessThan(2_000);
+    expect(small.points.length).toBeLessThan(doc.points.length);
+    const h2h = headToHeadRows([
+      {
+        key: "b:0",
+        session: "overnight",
+        symbol: "MSTR",
+        notionalUsd: 5000,
+        chosen: orderRow(rows, "immediate:perp"),
+        immediate: orderRow(rows, "immediate:perp"),
+        twap60: null,
+      },
+    ]);
+    expect(h2h).toEqual([
+      expect.objectContaining({
+        orderId: "b:0",
+        chosenStrategy: "immediate:perp",
+        sizeUsd: 5000,
+        chosen: imm?.realized,
+      }),
+    ]);
+    expect(h2h[0]?.twap60).toBeUndefined();
   });
 });

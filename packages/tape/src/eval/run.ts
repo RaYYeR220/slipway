@@ -9,6 +9,7 @@ import {
   forecastsFromPlan,
   type GateResult,
   type MarketSnapshot,
+  MODEL_VERSION,
   type PlanResult,
   planExecution,
   runGate,
@@ -19,6 +20,7 @@ import {
   signPlan,
 } from "@slipway/core";
 import type { AtlasDoc } from "../atlas/build.js";
+import { BUILD, type BuildInfo } from "../build-info.js";
 import type { LedgerStore } from "../ledger.js";
 import { type ObjectStore, PreconditionFailed } from "../store.js";
 import {
@@ -69,6 +71,8 @@ export interface OrderOutcome extends EvalOrder {
 
 export interface BatchManifest {
   batchId: string;
+  modelVersion?: string; // core cost-model version stamped on every plan
+  build?: BuildInfo | null; // code that registered the batch (repo + core commit)
   batchStart: number;
   protocolHash: string;
   seed: number;
@@ -103,9 +107,14 @@ export interface SnapshotBundle {
   batchId: string;
   protocolHash: string;
   atlasGeneratedAt: number;
-  snapshots: Record<string, LoadedSnapshot>;
+  snapshots: Record<string, LoadedSnapshot>; // by symbol; a symbol's later orders under "SYM#<order>"
   errors: Record<string, string>;
+  orderSnapshot?: Record<string, string>; // order index → key in `snapshots` (absent in batches before 12:50Z Oct 7)
 }
+
+/** Snapshot an order was planned on. */
+export const snapshotFor = (b: SnapshotBundle, order: number, symbol: string): LoadedSnapshot | undefined =>
+  b.snapshots[b.orderSnapshot?.[String(order)] ?? symbol];
 
 export async function runBatch(o: RunBatchOptions): Promise<BatchManifest | null> {
   const clock = o.now ?? Date.now;
@@ -119,9 +128,11 @@ export async function runBatch(o: RunBatchOptions): Promise<BatchManifest | null
   }
   const orders = drawBatch(p, batchStart);
 
-  // Each symbol is planned, gated and signed right after its snapshot loads, so live books are seconds old.
+  // Every order is planned, gated and signed right after its own snapshot loads, so live books are seconds old
+  // even when planning is slow (a symbol drawn twice is loaded twice).
   const snapshots: Record<string, LoadedSnapshot> = {};
   const errors: Record<string, string> = {};
+  const orderSnapshot: Record<string, string> = {};
   const outcomes: OrderOutcome[] = orders.map((order) => ({
     ...order,
     status: "registered",
@@ -129,18 +140,21 @@ export async function runBatch(o: RunBatchOptions): Promise<BatchManifest | null
     plans: [],
   }));
   const signedPlans: { order: number; role: string[]; signed: SignedPlan }[] = [];
-  for (const symbol of [...new Set(orders.map((x) => x.symbol))]) {
+  for (const outcome of outcomes) {
+    const symbol = outcome.symbol;
+    const key = snapshots[symbol] || errors[symbol] ? `${symbol}#${outcome.i}` : symbol;
+    orderSnapshot[String(outcome.i)] = key;
     let snap: LoadedSnapshot | null = null;
     try {
       snap = withAtlasInputs(await o.load(symbol, o.atlas.atlas), o.atlas);
-      snapshots[symbol] = snap;
+      snapshots[key] = snap;
     } catch (e) {
-      errors[symbol] = (e as Error).message;
+      errors[key] = (e as Error).message;
     }
-    for (const outcome of outcomes.filter((x) => x.symbol === symbol)) {
+    {
       if (!snap) {
         outcome.status = "no_snapshot";
-        outcome.detail = errors[symbol] ?? "snapshot unavailable";
+        outcome.detail = errors[key] ?? "snapshot unavailable";
         continue;
       }
       let result: PlanResult;
@@ -185,6 +199,7 @@ export async function runBatch(o: RunBatchOptions): Promise<BatchManifest | null
     atlasGeneratedAt: o.atlas.generatedAt,
     snapshots,
     errors,
+    orderSnapshot,
   };
   const bundleJson = JSON.stringify(bundle);
   try {
@@ -222,6 +237,8 @@ export async function runBatch(o: RunBatchOptions): Promise<BatchManifest | null
   });
   const manifest: BatchManifest = {
     batchId,
+    modelVersion: MODEL_VERSION,
+    build: BUILD,
     batchStart,
     protocolHash: PROTOCOL_HASH,
     seed: p.seed,
