@@ -28,11 +28,11 @@ All of it is public and re-checkable without credentials.
 
 - **Pre-registered evaluation.** Protocol: [`eval/protocol.json`](eval/protocol.json), sha256 `83106457…a31356`. Forecasts registered since 2026-10-06 06:30 UTC.
 - **Anchored on Arbitrum One.** [`ForecastAnchor`](https://arbiscan.io/address/0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F) `0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F` ([source, exact match on Sourcify](https://repo.sourcify.dev/42161/0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F)) stores the protocol hash and an append-only chain of Merkle roots over the ledger, one every 30 minutes, windows contiguous from the protocol's genesis. First anchor: 116,841 forecasts in [`0x5490424f…`](https://arbiscan.io/tx/0x5490424f5d1026cb75fc11c10bca124ce22b579a6e698fa07b93f8aa41f2404e). A forecast whose outcome lands after its anchor is provably pre-registered; the track record counts the two kinds separately.
-- **Head-to-head on the recorded book** (REPRODUCIBLE label, shadow fill, as of 2026-10-07):
-  - versus an immediate market order: Slipway's chosen plan was cheaper on 629 of 656 orders, mean −13.5 bp, 95% CI [−14.4, −12.7];
-  - versus a 60-second TWAP: cheaper on 115 of 130 orders, mean −13.4 bp, 95% CI [−16.3, −10.6].
+- **Head-to-head on the recorded book** (REPRODUCIBLE label, shadow fill; 128,403 forecasts registered and 92,363 graded as of 2026-10-07 18:30 UTC; live numbers move every few minutes):
+  - versus an immediate market order: Slipway's chosen plan was cheaper on 832 of 870 orders, mean −12.8 bp, 95% CI [−13.5, −12.0];
+  - versus a 60-second TWAP: cheaper on 165 of 189 orders, mean −12.2 bp, 95% CI [−14.6, −9.8].
 - **Forecast accuracy**, by venue × session × horizon, with p10–p90 coverage. Immediate perp orders: MAE 1.0–2.2 bp.
-- **Where it loses** is published next to the wins: individual symbols where TWAP beat the chosen plan, the p10–p90 band that is too narrow for immediate orders (coverage 66–77% against a target of 80%), and a data source that made choices worse (see below).
+- **Where it loses** is published next to the wins: individual symbols where TWAP beat the chosen plan, the p10–p90 band that is too narrow for immediate orders (coverage 64–77% against a target of 80%), and a data source that made choices worse (see below).
 - **Source effectiveness.** Each data source is removed in turn and the saved snapshots are re-planned. The perp book changes the chosen plan in 97% of orders and is worth 10.8 bp. The trade-flow participation cap changes 36% of choices and made them 2.1 bp *worse*. Several sources had no measurable effect in this window, and the page says so.
 - **`pnpm verify`** downloads the public ledger, checks both hash chains and every plan signature, re-grades a random sample from the public tape, and runs a negative control (a forged forecast, Merkle leaf and signed plan must all fail).
 
