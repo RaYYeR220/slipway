@@ -25,7 +25,7 @@ export const SUGGESTIONS = [
   "I want $40k of NVDA before Thursday, no perps, I'm patient",
   "Sell 300 TSLA as cheaply as possible today",
   "What does it cost to buy $250k of MSTR right now vs at the open?",
-  "Купи AAPL на $15k до пятницы, только спот, я не спешу",
+  "Exit $60k of HOOD before Friday's close without paying the spread",
 ];
 
 type Status = "submitted" | "streaming" | "ready" | "error";
