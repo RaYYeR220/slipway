@@ -1,0 +1,445 @@
+/* Shared content primitives for the site pages: type scale, plates, code, tables, tooltips.
+   Scale (Bringhurst): 12 · 14 · 16 · 18 · 21 · 24 · 36 · 48 · 60 · 72. */
+
+.page {
+  padding: 0 clamp(16px, 4.4vw, 64px);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.section {
+  padding: var(--s-9) 0;
+  border-top: 0.5px solid var(--rule);
+}
+.section:first-child {
+  border-top: 0;
+}
+
+.h1 {
+  margin: 0;
+  font: 300 clamp(44px, 5.6vw, 80px) / 0.98 var(--f-display);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.h2 {
+  margin: 0;
+  font: 300 clamp(32px, 3.4vw, 48px) / 1.04 var(--f-display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.h3 {
+  margin: 0;
+  font: 500 18px / 1.35 var(--f-body);
+  letter-spacing: -0.005em;
+}
+.lede {
+  max-width: 36em;
+  margin: var(--s-5) 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.body {
+  max-width: 38em;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.body p {
+  margin: 0 0 var(--s-4);
+}
+.body strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.meta {
+  margin: var(--s-4) 0 0;
+  font: 400 12px / 1.6 var(--f-mono);
+  color: var(--faint);
+  letter-spacing: 0.01em;
+}
+.meta a {
+  color: var(--muted);
+  text-underline-offset: 3px;
+}
+
+/* A figure plate: a hairline above, the figure, an italic caption with its source. No box. */
+.plate {
+  margin: var(--s-6) 0 0;
+  padding-top: var(--s-4);
+  border-top: 0.5px solid var(--rule);
+  min-width: 0;
+}
+.plateHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-5);
+  margin-bottom: var(--s-4);
+}
+.plateTitle {
+  margin: 0;
+  font: italic 400 18px / 1.3 var(--f-display);
+  color: var(--text);
+}
+.caption {
+  margin: var(--s-4) 0 0;
+  max-width: 52em;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.caption em {
+  font-family: var(--f-display);
+  font-size: 14.5px;
+  color: var(--text);
+}
+.source {
+  display: block;
+  margin-top: 6px;
+  font: 400 11.5px / 1.55 var(--f-mono);
+  color: var(--faint);
+  letter-spacing: 0.005em;
+  overflow-wrap: anywhere;
+}
+.source a {
+  color: var(--muted);
+  text-underline-offset: 3px;
+}
+
+.chart {
+  position: relative;
+  width: 100%;
+}
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.axisText {
+  font: 400 10.5px var(--f-mono);
+  fill: var(--faint);
+}
+.axisLabel {
+  font: 400 11px var(--f-body);
+  fill: var(--muted);
+}
+.gridLine {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+.axisLine {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+.dataLabel {
+  font: 500 11px var(--f-mono);
+  fill: var(--text);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.annot {
+  font: italic 400 13px var(--f-display);
+  fill: var(--muted);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.liveLabel {
+  font: 500 10.5px var(--f-mono);
+  fill: var(--live);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* Legend keys mirror the mark: swatch for fills, line key for lines, ring for points. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0 0 var(--s-3);
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.key {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+.lineKey {
+  display: inline-block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+}
+.ringKey {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+}
+
+.ramp {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.rampBar {
+  height: 8px;
+  border-radius: 1px;
+  box-shadow: inset 0 0 0 0.5px var(--rule);
+}
+.rampStops {
+  display: flex;
+  justify-content: space-between;
+  font: 400 10.5px var(--f-mono);
+  color: var(--faint);
+}
+
+/* Tooltip: value leads, label follows. */
+.tip {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  min-width: 140px;
+  max-width: 260px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 0.5px solid var(--rule);
+  border-radius: var(--r);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--bg) 60%, transparent);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.tip strong {
+  display: block;
+  font: 500 15px / 1.3 var(--f-body);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.tipRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Table-view twin under each chart. */
+.tableView {
+  margin-top: var(--s-3);
+  font-size: 13px;
+}
+.tableView summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--muted);
+  list-style: none;
+  padding: 4px 0;
+}
+.tableView summary::-webkit-details-marker {
+  display: none;
+}
+.tableView summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+.tableView[open] summary::before {
+  transform: rotate(45deg);
+}
+.tableView summary:hover {
+  color: var(--text);
+}
+.tableScroll {
+  margin-top: var(--s-3);
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 12px / 1.45 var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.table th {
+  font: 500 12px / 1.3 var(--f-body);
+  color: var(--muted);
+  text-align: left;
+  padding: 6px 12px 6px 0;
+  border-bottom: 0.5px solid var(--rule);
+  white-space: nowrap;
+}
+.table td {
+  padding: 6px 12px 6px 0;
+  border-bottom: 0.5px solid var(--grid);
+  white-space: nowrap;
+}
+.table td.num,
+.table th.num {
+  text-align: right;
+}
+
+/* Code */
+.code {
+  position: relative;
+  margin: var(--s-3) 0 0;
+  border: 0.5px solid var(--rule);
+  border-radius: var(--r);
+  background: var(--code-bg);
+}
+.code pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font: 400 12.5px / 1.6 var(--f-mono);
+  color: var(--text);
+  tab-size: 2;
+}
+.codeBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 6px 8px 6px 14px;
+  border-bottom: 0.5px solid var(--rule);
+  font: 400 11.5px var(--f-mono);
+  color: var(--faint);
+}
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 0.5px solid var(--rule);
+  border-radius: var(--r);
+  background: transparent;
+  color: var(--muted);
+  font: 500 12px var(--f-body);
+  cursor: pointer;
+}
+.copy:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+.inlineCode {
+  font: 400 0.88em var(--f-mono);
+  padding: 1px 4px;
+  border-radius: var(--r);
+  background: var(--code-bg);
+  border: 0.5px solid var(--rule);
+  overflow-wrap: anywhere;
+}
+
+/* Buttons and links */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 22px 15px 18px;
+  border-radius: var(--r);
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  font: 600 15.5px / 1 var(--f-body);
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+.cta:hover {
+  background: var(--cta-hover);
+}
+.textLink {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 4px;
+}
+.textLink:hover {
+  text-decoration-thickness: 1.5px;
+}
+
+.unavailable {
+  margin: var(--s-4) 0 0;
+  padding: var(--s-4);
+  border: 0.5px dashed var(--rule);
+  border-radius: var(--r);
+  font-size: 14px;
+  color: var(--muted);
+}
+.unavailable code {
+  font: 400 12px var(--f-mono);
+  overflow-wrap: anywhere;
+}
+
+/* Segmented filter row (links, so it works without script). */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin: 0 0 var(--s-5);
+  font-size: 13px;
+  color: var(--muted);
+}
+.seg {
+  display: inline-flex;
+  border: 0.5px solid var(--rule);
+  border-radius: var(--r);
+}
+.seg a,
+.seg button {
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 500 13px / 1 var(--f-body);
+  text-decoration: none;
+  cursor: pointer;
+}
+.seg a + a,
+.seg button + button {
+  border-left: 0.5px solid var(--rule);
+}
+.seg a[aria-current="true"],
+.seg button[aria-pressed="true"] {
+  background: var(--raise);
+  color: var(--text);
+}
+.seg a:hover,
+.seg button:hover {
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .section {
+    padding: var(--s-8) 0;
+  }
+  .lede {
+    font-size: 16.5px;
+  }
+}

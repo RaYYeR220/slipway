@@ -29,13 +29,6 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #f6f1e7; --surface: #ece4d3; --raise: #e3d9c3; --line: #cfc3a9;
-    --text: #10212a; --muted: #3b5a63; --faint: #5f7e85;
-    color-scheme: light;
-  }
-}
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }

@@ -1,0 +1,431 @@
+/* Landing story sections (below the hero). */
+
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: var(--s-5) var(--s-8);
+  align-items: start;
+}
+.head p {
+  margin: 0;
+  max-width: 34em;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.head p + p {
+  margin-top: var(--s-4);
+}
+.head strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.weekSlider {
+  outline-offset: 4px;
+}
+.weekSvg {
+  display: block;
+  touch-action: pan-y;
+}
+
+/* How Slipway decides */
+.decide {
+  margin-top: var(--s-7);
+}
+.lanes {
+  min-width: 0;
+}
+.laneAxis,
+.lane {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
+  gap: var(--s-6);
+  align-items: center;
+}
+.laneAxis svg,
+.lane svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.axisMarks {
+  position: relative;
+  height: 26px;
+  font: 400 11px var(--f-mono);
+  color: var(--faint);
+}
+.axisMarks span {
+  position: absolute;
+  bottom: 0;
+  padding: 0 0 6px 6px;
+  border-left: 1px solid var(--axis);
+  white-space: nowrap;
+}
+.axisMarks .nowMark {
+  border-left: 1.5px solid var(--live);
+  color: var(--live);
+  font-weight: 500;
+}
+.laneList {
+  margin: 0 0 var(--s-4);
+  padding: 0;
+  list-style: none;
+}
+.lane {
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--rule);
+}
+.lane:first-child {
+  border-top: 0.5px solid var(--rule);
+}
+.laneTitle {
+  margin: 0;
+  font: 500 16px / 1.3 var(--f-body);
+  color: var(--text);
+}
+.laneText {
+  margin: 4px 0 0;
+  max-width: 30em;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.pipeline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1.15fr) 40px minmax(0, 1.15fr);
+  align-items: stretch;
+  margin-top: var(--s-7);
+}
+.flowArrow {
+  position: relative;
+}
+.flowArrow::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 34px;
+  height: 0;
+  border-top: 1px solid var(--axis);
+}
+.flowArrow::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 34px;
+  width: 7px;
+  height: 7px;
+  margin-top: -4px;
+  border-top: 1px solid var(--axis);
+  border-right: 1px solid var(--axis);
+  transform: rotate(45deg);
+}
+.step,
+.gate,
+.ticket {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--s-4) 0 0;
+  border-top: 0.5px solid var(--rule);
+}
+.gate {
+  padding: var(--s-4) var(--s-5) var(--s-5);
+  border-top: 0;
+  border-left: 3px double var(--muted);
+  border-right: 3px double var(--muted);
+}
+.stepTitle {
+  margin: 0;
+  font: 400 26px / 1.15 var(--f-display);
+  letter-spacing: -0.01em;
+}
+.stepText {
+  margin: var(--s-2) 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.stepNote {
+  margin: var(--s-3) 0 0;
+  font: italic 400 14px var(--f-display);
+  color: var(--muted);
+}
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.checks li {
+  padding: 3px 7px;
+  border: 0.5px solid var(--rule);
+  border-radius: var(--r);
+  font: 400 11px / 1.4 var(--f-mono);
+  color: var(--muted);
+}
+.verdicts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: var(--s-4) 0 0;
+  list-style: none;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.verdicts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.ticketCode {
+  margin: var(--s-4) 0 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  background: var(--code-bg);
+  border: 0.5px solid var(--rule);
+  border-radius: var(--r);
+  font: 400 11.5px / 1.65 var(--f-mono);
+  color: var(--text);
+}
+
+/* It grades itself */
+.grades {
+  margin-top: var(--s-6);
+}
+.liveCount {
+  margin: 0;
+  font-size: 17px;
+  color: var(--muted);
+}
+.liveCount strong {
+  font: 500 17px var(--f-body);
+  color: var(--text);
+}
+.liveDot {
+  display: inline-block;
+  vertical-align: middle;
+  width: 7px;
+  height: 7px;
+  margin: -2px 10px 0 0;
+  border-radius: 50%;
+  background: var(--live);
+}
+.losses {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 0.5px solid var(--rule);
+}
+.losses ul {
+  margin: var(--s-2) 0 0;
+  padding: 0 0 0 1.1em;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.losses li::marker {
+  color: var(--refuse);
+}
+.losses strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.losses p {
+  margin: var(--s-2) 0 0;
+  color: var(--muted);
+}
+.more {
+  max-width: 40em;
+  margin: var(--s-6) 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* Every number is sourced */
+.sourced {
+  display: grid;
+  gap: 0;
+  margin-top: var(--s-7);
+}
+.readGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--s-5) var(--s-8);
+  align-items: start;
+}
+.layer {
+  padding: var(--s-5) 0;
+  border-top: 0.5px solid var(--rule);
+}
+.layerName {
+  margin: 0 0 var(--s-3);
+  font: italic 400 15px var(--f-display);
+  color: var(--muted);
+}
+.template {
+  margin: 0;
+  font: 400 14px / 1.9 var(--f-mono);
+  color: var(--muted);
+}
+.tok {
+  padding: 1px 5px;
+  border-radius: var(--r);
+  background: var(--code-bg);
+  border: 0.5px dashed var(--axis);
+  color: var(--text);
+  white-space: nowrap;
+}
+.fill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 var(--s-4);
+  font: 400 12px var(--f-mono);
+  color: var(--faint);
+}
+.fill::before {
+  content: "";
+  width: 1px;
+  height: 28px;
+  background: var(--axis);
+}
+.rendered {
+  margin: 0;
+  max-width: 30em;
+  font: 300 clamp(22px, 2.3vw, 30px) / 1.45 var(--f-display);
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.chip {
+  padding: 0 5px 1px;
+  border-radius: var(--r);
+  border: 0.5px solid var(--axis);
+  background: var(--code-bg);
+  font: 400 0.76em var(--f-mono);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.chip sup {
+  margin-left: 3px;
+  font: 500 0.6em var(--f-mono);
+  color: var(--faint);
+}
+.sources {
+  display: grid;
+  gap: 10px;
+  margin: 6px 0 0;
+  padding: 0 0 0 1.6em;
+  font-size: 13px;
+  color: var(--muted);
+}
+.sources li::marker {
+  font: 500 11px var(--f-mono);
+  color: var(--faint);
+}
+.sources code {
+  font: 400 12px var(--f-mono);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.sources span {
+  display: block;
+  color: var(--faint);
+  font-size: 12.5px;
+}
+
+/* Plug it in */
+.plug {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-7) var(--s-7);
+  margin-top: var(--s-7);
+}
+.plugItem {
+  min-width: 0;
+  padding-top: var(--s-4);
+  border-top: 0.5px solid var(--rule);
+}
+.plugName {
+  margin: 0;
+  font: 400 26px / 1.1 var(--f-display);
+  letter-spacing: -0.01em;
+}
+.plugLine {
+  margin: var(--s-2) 0 var(--s-3);
+  max-width: 34em;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.plug .more {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+@media (max-width: 1000px) {
+  .pipeline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flowArrow {
+    height: 40px;
+  }
+  .flowArrow::before {
+    left: 24px;
+    right: auto;
+    top: 8px;
+    bottom: 8px;
+    height: auto;
+    width: 0;
+    border-top: 0;
+    border-left: 1px solid var(--axis);
+  }
+  .flowArrow::after {
+    left: 24px;
+    right: auto;
+    top: auto;
+    bottom: 8px;
+    margin: 0 0 0 -3.5px;
+    transform: rotate(135deg);
+  }
+  .gate {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .readGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .plug {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-6);
+  }
+}
+
+@media (max-width: 700px) {
+  .laneAxis,
+  .lane {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .laneAxis > span {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  /* the lane drawings scale to about half size on phones: grow the slice dots back (CSS r where supported) */
+  .lane svg circle {
+    r: 8px;
+  }
+}
