@@ -41,6 +41,7 @@ export default async function Home() {
           rng={r ? r.rng.map((v) => v ?? 0) : []}
           ratio={ratio}
           source={heroSource}
+          weeks={r ? Math.max(1, Math.round((r.to - r.from) / (7 * 86_400_000))) : undefined}
         />
         <div className={ui.page}>
           <section className={ui.section} aria-labelledby="problem-h">
