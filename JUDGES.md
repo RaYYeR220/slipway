@@ -36,7 +36,9 @@ pnpm verify
 
 This downloads the public ledger, checks both hash chains and every plan signature, re-grades a random sample of forecasts from the public tape, and confirms that a forged forecast, Merkle leaf and signed plan are all rejected.
 
-Public data: `https://storage.googleapis.com/slipway-tape-c48c75/` (`derived/track-record.json`, `derived/atlas.json`, `ledger/`, `eval/`, `grades/`, `tape/raw/`).
+It also recomputes each Merkle root and checks it against the on-chain anchor: [`ForecastAnchor` on Arbitrum One](https://arbiscan.io/address/0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F), source verified on [Sourcify](https://repo.sourcify.dev/42161/0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F).
+
+Public data: `https://storage.googleapis.com/slipway-tape-c48c75/` (`derived/track-record.json`, `derived/atlas.json`, `ledger/`, `eval/`, `grades/`, `anchors/`, `tape/raw/`).
 
 ## 4. Use it from your own agent (1 min)
 

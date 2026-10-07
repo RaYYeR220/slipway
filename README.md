@@ -27,6 +27,7 @@ Slipway answers one question well: **what will this order cost me, where and whe
 All of it is public and re-checkable without credentials.
 
 - **Pre-registered evaluation.** Protocol: [`eval/protocol.json`](eval/protocol.json), sha256 `83106457…a31356`. Forecasts registered since 2026-10-06 06:30 UTC.
+- **Anchored on Arbitrum One.** [`ForecastAnchor`](https://arbiscan.io/address/0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F) `0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F` ([source, exact match on Sourcify](https://repo.sourcify.dev/42161/0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F)) stores the protocol hash and an append-only chain of Merkle roots over the ledger, one every 30 minutes, windows contiguous from the protocol's genesis. First anchor: 116,841 forecasts in [`0x5490424f…`](https://arbiscan.io/tx/0x5490424f5d1026cb75fc11c10bca124ce22b579a6e698fa07b93f8aa41f2404e). A forecast whose outcome lands after its anchor is provably pre-registered; the track record counts the two kinds separately.
 - **Head-to-head on the recorded book** (REPRODUCIBLE label, shadow fill, as of 2026-10-07):
   - versus an immediate market order: Slipway's chosen plan was cheaper on 629 of 656 orders, mean −13.5 bp, 95% CI [−14.4, −12.7];
   - versus a 60-second TWAP: cheaper on 115 of 130 orders, mean −13.4 bp, 95% CI [−16.3, −10.6].
@@ -64,7 +65,7 @@ flowchart LR
   end
   D --> L
   L --> GR
-  L -. Merkle roots .-> ARB[(Arbitrum One anchor)]
+  L -- Merkle roots every 30 min --> ARB[(Arbitrum One anchor)]
   Desk --> MCP[MCP server] & SKILL[Skill] & SDK[SDK / HTTP API]
 ```
 

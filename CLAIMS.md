@@ -30,7 +30,8 @@ Every public statement about Slipway, tagged by how it can be checked.
 | The same comparison with own-impact carry-over | MODELED | label MODELED |
 | The same comparison assuming no book refill | MODELED | label BOUND |
 | Source ablation results, including sources with no effect and one with a negative effect | REPRODUCIBLE | saved snapshots under `eval/snapshots/`, re-planned by the grader |
-| Forecasts are anchored on Arbitrum One before their outcome | NOT-CLAIMED until the anchor contract is live; until then forecasts are ledger-timestamped only, as the track record page states | `contracts/`, `anchors/` |
+| Ledger Merkle roots are anchored on Arbitrum One every 30 minutes in contiguous windows from the protocol's genesis | REPRODUCIBLE | contract `0x33c8b0CDcb9712196184FD48F54Eb4Eef6C82d5F` (Sourcify exact match), `anchors/<i>.json`, `pnpm verify` |
+| A given forecast was committed before its outcome | REPRODUCIBLE only for forecasts whose outcome time is after their anchor's block time; the first anchor (2026-10-07) covered every forecast since genesis at once, so forecasts graded before it are ledger-timestamped only | track record `anchoring` counts |
 
 ## Language interface
 
