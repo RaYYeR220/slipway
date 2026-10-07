@@ -41,7 +41,9 @@ export function OrderLine({ initial, symbol, profile, busy, onSubmit }: Props) {
   const [side, setSide] = useState<"buy" | "sell">(initial?.side ?? "buy");
   const [unit, setUnit] = useState<"usd" | "qty">(initial?.qty !== undefined ? "qty" : "usd");
   const [amount, setAmount] = useState<string>(String(initial?.qty ?? initial?.notionalUsd ?? 40000));
-  const [sym, setSym] = useState(initial?.symbol?.toUpperCase() ?? symbol);
+  const seeded = initial?.symbol?.trim().toUpperCase();
+  const symbols = seeded && !UNIVERSE.includes(seeded) ? [...UNIVERSE, seeded] : UNIVERSE;
+  const [sym, setSym] = useState(seeded ?? symbol);
   const [deadline, setDeadline] = useState(initial?.deadline ?? "");
   const [venues, setVenues] = useState<Record<Venue, boolean>>({
     rtoken: initial?.venues ? initial.venues.includes("rtoken") : true,
@@ -69,6 +71,8 @@ export function OrderLine({ initial, symbol, profile, busy, onSubmit }: Props) {
     if (deadline.trim()) intent.deadline = deadline.trim().slice(0, 40);
     if (v.length === 1) intent.venues = v;
     if (urgency) intent.urgency = urgency;
+    // The form has no field for it, so a holding period read from the conversation rides along.
+    if (initial?.holdHorizonHours !== undefined) intent.holdHorizonHours = initial.holdHorizonHours;
     onSubmit(intent);
   };
 
@@ -118,7 +122,7 @@ export function OrderLine({ initial, symbol, profile, busy, onSubmit }: Props) {
           Stock
         </label>
         <select id={`${id}-sym`} className={c.word} value={sym} onChange={(e) => setSym(e.target.value)}>
-          {UNIVERSE.map((u) => (
+          {symbols.map((u) => (
             <option key={u} value={u}>
               {u}
             </option>

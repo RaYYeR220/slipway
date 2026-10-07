@@ -102,7 +102,7 @@ const FEE_SOURCE: Record<Venue, string> = { rtoken: "bitget.spot.symbol", perp: 
 export const planIdOf = (s: Pick<SignedPlan, "hash">): string => s.hash.slice(0, 12);
 
 const usdOf = (bps: number, notional: number) => (bps / 1e4) * notional;
-const checkViews = (g: GateResult): CheckView[] =>
+const checkViews = (g: Pick<GateResult, "checks">): CheckView[] =>
   g.checks.map((c) =>
     c.fix
       ? { code: c.code, status: c.status, detail: c.detail, fix: c.fix }
@@ -538,8 +538,13 @@ export class Desk {
       extra: Partial<Extract<TicketsData, { ok: false }>> = {},
       sources: SourceRef[] = [],
     ): DeskResult<TicketsData> => {
-      const verdict = signed?.gate?.verdict ?? null;
-      const fixes = signed?.gate ? checkViews(signed.gate).filter((c) => c.status !== "pass") : [];
+      // The signed plan comes from the caller: a malformed gate still gets a refusal, never a 500.
+      const gate = signed?.gate;
+      const verdict = typeof gate?.verdict === "string" ? gate.verdict : null;
+      const checks = Array.isArray(gate?.checks)
+        ? gate.checks.filter((c) => !!c && typeof c === "object")
+        : [];
+      const fixes = checkViews({ checks }).filter((c) => c.status !== "pass");
       bag
         .text("tickets.status", "REFUSED", "slipway.signer")
         .text("tickets.reason", reason, "slipway.signer");

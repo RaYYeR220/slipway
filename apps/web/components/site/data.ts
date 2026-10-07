@@ -19,6 +19,23 @@ async function getJson<T>(url: string, revalidate = 60): Promise<Fetched<T>> {
   }
 }
 
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null && !Array.isArray(v);
+
+// A 200 with the wrong shape is reported like any other failure, never cast and rendered.
+async function getShaped<T>(
+  url: string,
+  revalidate: number,
+  what: string,
+  valid: (d: unknown) => boolean,
+): Promise<Fetched<T>> {
+  const r = await getJson<unknown>(url, revalidate);
+  if (!r.ok) return r;
+  return valid(r.data)
+    ? { ok: true, data: r.data as T, url }
+    : { ok: false, error: `malformed ${what}`, url };
+}
+
 /* ---------- track record (derived/track-record.json, written by the grader) ---------- */
 
 export type Label = "REPRODUCIBLE" | "MODELED" | "BOUND";
@@ -96,7 +113,22 @@ export interface TrackRecord {
 }
 
 export const TRACK_RECORD_URL = `${PUBLIC_BASE}/derived/track-record.json`;
-export const getTrackRecord = () => getJson<TrackRecord>(TRACK_RECORD_URL, 60);
+const isTrackRecord = (d: unknown) =>
+  isObj(d) &&
+  isObj(d.protocol) &&
+  typeof d.protocol.hash === "string" &&
+  isObj(d.counts) &&
+  isObj(d.ungradedReasons) &&
+  isObj(d.headToHead) &&
+  isObj(d.accuracy) &&
+  isObj(d.calibration) &&
+  (d.ablation === null || (isObj(d.ablation) && Array.isArray(d.ablation.sources))) &&
+  Array.isArray(d.losses) &&
+  isObj(d.anchoring) &&
+  Array.isArray(d.notes);
+
+export const getTrackRecord = () =>
+  getShaped<TrackRecord>(TRACK_RECORD_URL, 60, "track record", isTrackRecord);
 
 /* ---------- atlas (derived/atlas.json, written by the atlas builder) ---------- */
 
@@ -111,7 +143,14 @@ export interface AtlasDoc {
 }
 
 export const ATLAS_URL = `${PUBLIC_BASE}/derived/atlas.json`;
-export const getAtlas = () => getJson<AtlasDoc>(ATLAS_URL, 60);
+const isAtlas = (d: unknown) =>
+  isObj(d) &&
+  isObj(d.atlas) &&
+  Object.values(d.atlas).every(isObj) &&
+  isObj(d.window) &&
+  (d.flags === undefined || Array.isArray(d.flags));
+
+export const getAtlas = () => getShaped<AtlasDoc>(ATLAS_URL, 60, "atlas", isAtlas);
 
 /* ---------- per-forecast grades (grades/eval/<date>/<ledger file>.json) ---------- */
 
@@ -178,14 +217,27 @@ interface PublishedPoint {
 
 export const POINTS_URL = `${PUBLIC_BASE}/derived/track-record-points.json`;
 
-const horizonBucket = (s: number) => (s <= 60 ? "0-60s" : s <= 900 ? "1-15m" : s <= 21_600 ? "15m-6h" : ">6h");
+const horizonBucket = (s: number) =>
+  s <= 60 ? "0-60s" : s <= 900 ? "1-15m" : s <= 21_600 ? "15m-6h" : ">6h";
+
+// reduce, not Math.min(...ts): a spread of thousands of points can overflow the call stack.
+const timeSpan = (ts: number[]) =>
+  ts.length
+    ? { from: ts.reduce((a, b) => Math.min(a, b)), to: ts.reduce((a, b) => Math.max(a, b)) }
+    : { from: null, to: null };
 
 async function getPublishedPoints(): Promise<Fetched<GradeSample>> {
   const r = await getJson<{ points?: PublishedPoint[] } | PublishedPoint[]>(POINTS_URL, 60);
   if (!r.ok) return r;
-  const rows = Array.isArray(r.data) ? r.data : (r.data.points ?? []);
-  const points: GradePoint[] = rows
-    .filter((p) => p.scope === "order" && typeof p.realized?.shadow === "number")
+  const rows = Array.isArray(r.data) ? r.data : (r.data?.points ?? []);
+  const points: GradePoint[] = (Array.isArray(rows) ? rows : [])
+    .filter(
+      (p) =>
+        p?.scope === "order" &&
+        typeof p.realized?.shadow === "number" &&
+        p.predicted &&
+        typeof p.predicted.p50 === "number",
+    )
     .map((p) => ({
       at: p.at,
       symbol: p.symbol,
@@ -205,7 +257,6 @@ async function getPublishedPoints(): Promise<Fetched<GradeSample>> {
       },
     }));
   if (!points.length) return { ok: false, error: "no graded order points published", url: POINTS_URL };
-  const ts = points.map((p) => p.at);
   return {
     ok: true,
     url: POINTS_URL,
@@ -213,8 +264,7 @@ async function getPublishedPoints(): Promise<Fetched<GradeSample>> {
       source: "derived/track-record-points.json · the latest graded order-level forecasts",
       files: 1,
       filesListed: 1,
-      from: Math.min(...ts),
-      to: Math.max(...ts),
+      ...timeSpan(points.map((p) => p.at)),
       points,
     },
   };
@@ -234,8 +284,9 @@ async function listNames(prefix: string, revalidate = 60): Promise<Fetched<strin
     }`;
     const r = await getJson<Listing>(url, revalidate);
     if (!r.ok) return { ok: false, error: r.error, url: r.url };
-    for (const it of r.data.items ?? []) names.push(it.name);
-    token = r.data.nextPageToken;
+    const items = r.data?.items;
+    for (const it of Array.isArray(items) ? items : []) if (typeof it?.name === "string") names.push(it.name);
+    token = r.data?.nextPageToken;
     if (!token) break;
   }
   return { ok: true, data: names, url: `${LISTING_BASE}?prefix=${prefix}` };
@@ -243,6 +294,14 @@ async function listNames(prefix: string, revalidate = 60): Promise<Fetched<strin
 
 /** Graded order-level forecasts: the published points file, else the most recent `maxFiles` raw grade files. */
 export async function getGradeSample(maxFiles = 48): Promise<Fetched<GradeSample>> {
+  try {
+    return await readGradeSample(maxFiles);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e), url: POINTS_URL };
+  }
+}
+
+async function readGradeSample(maxFiles: number): Promise<Fetched<GradeSample>> {
   const published = await getPublishedPoints();
   if (published.ok) return published;
   const listed = await listNames("grades/eval/");
@@ -256,7 +315,7 @@ export async function getGradeSample(maxFiles = 48): Promise<Fetched<GradeSample
     if (!f.ok || !Array.isArray(f.data)) continue;
     read++;
     for (const g of f.data) {
-      if (g.scope !== "order" || g.status !== "graded" || !g.realized) continue;
+      if (g?.scope !== "order" || g.status !== "graded" || !g.realized || typeof g.p50 !== "number") continue;
       points.push({
         at: g.until ?? g.at,
         symbol: g.symbol,
@@ -277,7 +336,6 @@ export async function getGradeSample(maxFiles = 48): Promise<Fetched<GradeSample
     }
   }
   if (!read) return { ok: false, error: "no grade file could be read", url: listed.url };
-  const ts = points.map((p) => p.at);
   return {
     ok: true,
     url: listed.url,
@@ -285,8 +343,7 @@ export async function getGradeSample(maxFiles = 48): Promise<Fetched<GradeSample
       source: `grades/eval/ · latest ${read} of ${names.length} grade files, one batch each`,
       files: read,
       filesListed: names.length,
-      from: ts.length ? Math.min(...ts) : null,
-      to: ts.length ? Math.max(...ts) : null,
+      ...timeSpan(points.map((p) => p.at)),
       points,
     },
   };

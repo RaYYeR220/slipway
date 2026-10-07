@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { verifySignedPlan } from "@slipway/core";
+import { type GateResult, signPlan, verifySignedPlan } from "@slipway/core";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PROFILE } from "../src/desk/schemas.js";
 import { DeskError, planIdOf } from "../src/desk/service.js";
@@ -200,6 +200,20 @@ describe("buildPlan and issueTickets", () => {
       ok: false,
       reason: expect.stringMatching(/ms old/),
     });
+  });
+
+  it("refuses, rather than throws on, a correctly signed plan whose gate checks hold a null", async () => {
+    const desk = recordedDesk();
+    const { signedPlan } = (await desk.buildPlan(ORDER, DEFAULT_PROFILE, "best")).data;
+    const gate = { ...signedPlan.gate, checks: [...signedPlan.gate.checks, null] } as unknown as GateResult;
+    const malformed = await signPlan(signedPlan.plan, gate, (await testKeys()).keys, signedPlan.issuedAt);
+    const t = await desk.issueTickets(malformed);
+    expect(t.data).toMatchObject({
+      ok: false,
+      planId: planIdOf(malformed),
+      verdict: signedPlan.gate.verdict,
+    });
+    expect(!t.data.ok && t.data.fixes.every((c) => typeof c.code === "string")).toBe(true);
   });
 });
 

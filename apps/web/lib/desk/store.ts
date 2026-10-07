@@ -105,6 +105,8 @@ export function deskReducer(state: DeskState, a: DeskAction): DeskState {
           if (sym && sym !== state.symbol) next.symbol = sym;
           break;
         case "tickets":
+          // Tickets answer one signed plan; a late answer for a plan no longer on screen is dropped.
+          if ((a.held.data as { planId?: unknown } | null)?.planId !== state.plan?.data.planId) return state;
           next.tickets = a.held as DeskState["tickets"];
           break;
         case "market":

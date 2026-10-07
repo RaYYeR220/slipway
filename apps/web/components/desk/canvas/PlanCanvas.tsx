@@ -1,6 +1,7 @@
 "use client";
 // The plan canvas: the order, the live market, the answer, then the evidence behind it — tide, venue options,
 // gate, tickets and the ledger of sources. Every figure here is drawn from an API payload.
+import { useState } from "react";
 import {
   age,
   bps,
@@ -61,7 +62,13 @@ export function PlanCanvas({
   onOpenProfile,
 }: Props) {
   const { options, plan, market } = state;
-  const intentKey = options ? `${options.at}` : "none";
+  // The order line keeps what the trader typed; only an order read from the conversation re-seeds it.
+  const [seed, setSeed] = useState<{ key: string; intent: IntentRequest | null }>({
+    key: "none",
+    intent: null,
+  });
+  if (options?.origin === "chat" && seed.key !== `${options.at}`)
+    setSeed({ key: `${options.at}`, intent: options.intent ?? null });
   const symbol = state.symbol;
   const lt = loadingText(symbol, market?.data ?? null);
 
@@ -69,8 +76,8 @@ export function PlanCanvas({
     <main id="main" className={c.canvas} tabIndex={-1}>
       <div className={c.inner}>
         <OrderLine
-          key={intentKey}
-          initial={options?.intent ?? null}
+          key={seed.key}
+          initial={seed.intent}
           symbol={symbol}
           profile={profile}
           busy={!!busy.options}
@@ -109,7 +116,13 @@ export function PlanCanvas({
           plan={plan}
           planBusy={busy.plan}
           ticketsBusy={busy.tickets}
-          issued={!!(state.tickets?.data.ok && plan && state.tickets.data.planId === plan.data.planId)}
+          issued={
+            plan && state.tickets?.data.planId === plan.data.planId
+              ? state.tickets.data.ok
+                ? "issued"
+                : "refused"
+              : null
+          }
           error={state.errors.plan}
           profile={profile}
           onResign={() => plan && onSign(plan.data.strategy.id, plan.intent ?? null)}

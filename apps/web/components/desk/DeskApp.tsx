@@ -198,6 +198,19 @@ export function DeskApp() {
   }, [symbol]);
 
   // ---- canvas actions (order line + buttons) -----------------------------------------------------------------
+  // Only the latest call per action lands, and only while what it was asked for is still on screen: a plan is
+  // for the options it was signed from, tickets are for the plan they were issued against.
+  const genRef = useRef({ options: 0, plan: 0, tickets: 0 });
+  const basisRef = useRef<Record<"options" | "plan" | "tickets", unknown>>({
+    options: null,
+    plan: null,
+    tickets: null,
+  });
+  basisRef.current = {
+    options: null,
+    plan: state.options?.at ?? null,
+    tickets: state.plan?.data.planId ?? null,
+  };
   const run = useCallback(
     async <T,>(
       key: "options" | "plan" | "tickets",
@@ -205,19 +218,24 @@ export function DeskApp() {
       f: () => Promise<{ data: T; sources: Held<T>["sources"] }>,
       intent?: IntentRequest,
     ) => {
+      const gen = ++genRef.current[key];
+      const basis = basisRef.current[key];
+      const live = () => genRef.current[key] === gen && basisRef.current[key] === basis;
       dispatch({ type: "busy", key, label });
       dispatch({ type: "error", key, error: null });
       try {
         const r = await f();
+        if (!live()) return;
         const held: Held<unknown> = { data: r.data, sources: r.sources, origin: "form", at: Date.now() };
         if (intent) held.intent = intent;
         dispatch({ type: "held", key, held: held as Held<never>, via: key });
       } catch (e) {
+        if (!live()) return;
         const err = failure(e);
         dispatch({ type: "error", key, error: err });
         dispatch({ type: "sources", sources: err.sources, via: key });
       } finally {
-        dispatch({ type: "busy", key, label: null });
+        if (genRef.current[key] === gen) dispatch({ type: "busy", key, label: null });
       }
     },
     [],

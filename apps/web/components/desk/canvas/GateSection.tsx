@@ -13,8 +13,8 @@ interface Props {
   plan: Held<PlanData> | null;
   planBusy: string | undefined;
   ticketsBusy: string | undefined;
-  /** True when dry-run tickets were already issued for the plan on screen. */
-  issued: boolean;
+  /** Whether dry-run tickets were already issued (or refused) for the plan on screen. */
+  issued: "issued" | "refused" | null;
   error: ApiFailure | undefined;
   profile: Profile;
   onResign: () => void;
@@ -210,6 +210,7 @@ export function GateSection(props: Props) {
             ))}
           </ol>
 
+          {error ? <Failure error={error} what="Could not sign a new plan" /> : null}
           <div className={c.gateActions}>
             {plan ? (
               <>
@@ -224,7 +225,12 @@ export function GateSection(props: Props) {
                   </span>
                 </div>
                 <div className={c.btnRow}>
-                  <button type="button" className={c.ghostBtn} onClick={props.onResign} disabled={!!planBusy}>
+                  <button
+                    type="button"
+                    className={c.ghostBtn}
+                    onClick={props.onResign}
+                    disabled={!!planBusy || !!ticketsBusy}
+                  >
                     {planBusy ? "Re-signing…" : "Re-sign on fresh books"}
                   </button>
                   {props.issued ? (
@@ -233,7 +239,9 @@ export function GateSection(props: Props) {
                       className={c.ghostBtn}
                       onClick={() => scrollToSection("desk-tickets")}
                     >
-                      Tickets issued: see them below
+                      {props.issued === "issued"
+                        ? "Tickets issued: see them below"
+                        : "Tickets refused: see why below"}
                     </button>
                   ) : (
                     <button type="button" className={c.primary} onClick={props.onIssue} disabled={!canIssue}>
