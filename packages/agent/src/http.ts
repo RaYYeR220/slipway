@@ -87,6 +87,18 @@ function clientKey(req: Request): string {
   return vercel || real || hops[hops.length - 1] || "anon";
 }
 
+// Only what people typed counts toward the conversation cap; tool outputs are bounded by the body limit and are
+// reduced to their slots before they reach the model.
+function typedChars(messages: Record<string, unknown>[]): number {
+  let n = 0;
+  for (const m of messages) {
+    if (!Array.isArray(m.parts)) continue;
+    for (const p of m.parts as { type?: string; text?: unknown }[])
+      if (p?.type === "text" && typeof p.text === "string") n += p.text.length;
+  }
+  return n;
+}
+
 function refill(b: { tokens: number; at: number }, cap: number, perMinute: number, now: number): void {
   b.tokens = Math.min(cap, b.tokens + ((now - b.at) / 60_000) * perMinute);
   b.at = now;
@@ -176,7 +188,7 @@ export function createApiHandlers(desk: Desk = new Desk(), agent: AgentOptions =
             429,
           );
         const b = ChatRequestSchema.parse(await body(req));
-        if (b.messages.length > CHAT_LIMIT.maxMessages || JSON.stringify(b.messages).length > CHAT_LIMIT.maxChars)
+        if (b.messages.length > CHAT_LIMIT.maxMessages || typedChars(b.messages) > CHAT_LIMIT.maxChars)
           throw new DeskError("conversation too long, start a new one", "BAD_INPUT");
         return runTurn(
           { messages: b.messages as unknown as UIMessage[], profile: b.profile ?? DEFAULT_PROFILE },
