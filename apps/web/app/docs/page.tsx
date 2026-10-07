@@ -197,14 +197,17 @@ export default async function DocsPage() {
             <OriginCode title="endpoint" code="{ORIGIN}/api/mcp" />
             <h3 className={styles.h3}>Connect a client</h3>
             <OriginCode
-              title="claude_desktop_config.json, Cursor and other JSON-configured clients"
+              title="Desktop clients, Cursor and other JSON-configured clients"
               code={`{
   "mcpServers": {
     "slipway": { "type": "http", "url": "{ORIGIN}/api/mcp" }
   }
 }`}
             />
-            <OriginCode title="Claude Code" code="claude mcp add --transport http slipway {ORIGIN}/api/mcp" />
+            <OriginCode
+              title="Terminal agents with an MCP add command"
+              code="<agent> mcp add --transport http slipway {ORIGIN}/api/mcp"
+            />
             <CodeBlock
               title="stdio, from a built checkout"
               code={`{
