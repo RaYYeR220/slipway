@@ -14,7 +14,14 @@
 // startFlow mounts on the hero's elements and returns a cleanup that stops every loop and listener and releases
 // the WebGL context. The trail canvases are created here (fresh per mount), inside `host`.
 
-import { createTrails2D, createTrailsGL, type MaskRect, STRIDE, type Trails } from "./hero/trails";
+import {
+  createTrails2D,
+  createTrailsGL,
+  type MaskRect,
+  STRIDE,
+  TRAIL_FADE,
+  type Trails,
+} from "./hero/trails";
 import {
   blur1,
   clamp,
@@ -133,10 +140,26 @@ interface Cfg {
   eddyR: number;
 }
 
+/** Capture-only switches, read from the URL and nowhere else; without `capture=1` nothing changes. `capture=1`
+ * fixes the particle budget (no adaptive shedding or brightening) and the frame step; `speed` scales advection;
+ * `fade` sets trail persistence per frame (default: the visible length and light of the normal trails, held). */
+function captureParams(): { speed: number; fade: number } | null {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("capture") !== "1") return null;
+    const speed = clamp(Number(q.get("speed") ?? "1") || 1, 0.1, 2);
+    const fade = clamp(Number(q.get("fade") ?? "") || 1 - (1 - TRAIL_FADE) * speed, 0.9, 0.999);
+    return { speed, fade };
+  } catch {
+    return null;
+  }
+}
+
 /** Mounts the hero's current. Returns a cleanup that stops every loop and listener and frees the GL context. */
 export function startFlow(el: FlowElements, data: FlowData): () => void {
   const { sea } = el;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const CAP = captureParams();
   const rs = getComputedStyle(document.documentElement);
   const tok = (name: string, fb: string) => {
     const v = rs.getPropertyValue(name).trim();
@@ -1042,7 +1065,7 @@ export function startFlow(el: FlowElements, data: FlowData): () => void {
     lf[i] = 80 + Math.random() * 190;
   }
   function makeTrails(): Trails | null {
-    const t = createTrailsGL(flowCv, BG, onLost, onRestored);
+    const t = createTrailsGL(flowCv, BG, onLost, onRestored, CAP?.fade);
     if (t) return t;
     // a WebGL2 context may exist but be unusable: the 2D fallback needs a fresh canvas
     const fresh = mkCanvas();
@@ -1322,7 +1345,7 @@ export function startFlow(el: FlowElements, data: FlowData): () => void {
     if (!trails) return;
     const dtf = clamp(dt / 16.667, 0.3, 2.2);
     stickFrame(dtf);
-    stepFlow(dtf);
+    stepFlow(CAP ? dtf * CAP.speed : dtf);
     let count = Nact;
     if (FIG.n && FIG.mode === "intro" && t >= COND_T0) {
       stepIntro(t);
@@ -1385,7 +1408,7 @@ export function startFlow(el: FlowElements, data: FlowData): () => void {
   }
   function loop(now: number) {
     if (!running) return;
-    const dt = Math.min(50, Math.max(4, now - last));
+    const dt = CAP ? 1000 / 60 : Math.min(50, Math.max(4, now - last));
     last = now;
     if (pend) {
       pointerAt(pend[0], pend[1]);
@@ -1393,7 +1416,7 @@ export function startFlow(el: FlowElements, data: FlowData): () => void {
     }
     const a = performance.now();
     frame((now - t0) / 1000, dt, now);
-    govern(performance.now() - a);
+    if (!CAP) govern(performance.now() - a);
     raf = requestAnimationFrame(loop);
   }
   /* a slow main thread sheds particles (down to half) instead of frames, and each remaining particle carries a

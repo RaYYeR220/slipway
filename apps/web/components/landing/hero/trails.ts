@@ -24,7 +24,8 @@ export interface Trails {
   dispose(): void;
 }
 
-const FADE = 0.968;
+/** Light kept per frame. Exported so a capture can hold the trail's length when it slows the current. */
+export const TRAIL_FADE = 0.968;
 const EPS = 0.0009;
 const GAIN = 1.12;
 const BLOOM = 1.15;
@@ -82,6 +83,7 @@ export function createTrailsGL(
   bg: [number, number, number],
   onLost: () => void,
   onRestored: () => void,
+  fadePerFrame: number = TRAIL_FADE,
 ): Trails | null {
   let gl: WebGL2RenderingContext | null = null;
   try {
@@ -262,7 +264,7 @@ export function createTrailsGL(
       g.activeTexture(g.TEXTURE0);
       g.bindTexture(g.TEXTURE_2D, tex[cur] as WebGLTexture);
       g.uniform1i(fade.u.T as WebGLUniformLocation, 0);
-      g.uniform1f(fade.u.fade as WebGLUniformLocation, FADE);
+      g.uniform1f(fade.u.fade as WebGLUniformLocation, fadePerFrame);
       g.uniform1f(fade.u.eps as WebGLUniformLocation, half ? EPS : 1.6 / 255);
       g.bindVertexArray(vaoEmpty);
       g.drawArrays(g.TRIANGLES, 0, 3);
