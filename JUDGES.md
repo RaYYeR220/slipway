@@ -15,7 +15,7 @@ Watch for:
 - the **gate**: ten checks with their status, then a signed plan with a 60-second window;
 - **"Issue dry-run tickets"**: the exact Bitget UTA v3 request and the `bgc … --dry-run` command for each slice.
 
-Then make it refuse: set the cost cap in the profile to 3 bp and ask again. The gate refuses, says why, and offers the largest size that fits. No ticket can be issued for that plan.
+Then make it refuse: set the cost cap in the profile to 3 bp and ask again. The gate refuses on `COST_CAP` and gives the fix it computed: here, that no size of the strategy fits, because fees and spread alone are above the cap (with a looser cap it offers the largest size that fits). No ticket can be issued for that plan.
 
 ## 2. Check the track record (1 min)
 
